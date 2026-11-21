@@ -1,23 +1,249 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0f0c;
-  --foreground: #ededed;
+  --bg: #0b0f14;
+  --surface: #131921;
+  --card: #10151b;
+  --line: #222b36;
+  --fg: #f2f5f7;
+  --muted: #9aa6b2;
+  --brand: #5bd66a;
+  --brand-ink: #07210d;
+  --discord: #5865f2;
+  --discord-hover: #4752c4;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-discord: var(--discord);
+  --color-discord-hover: var(--discord-hover);
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), sans-serif;
 }
 
 html {
   color-scheme: dark;
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem; /* keeps anchored sections clear of the top edge */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Scrollbar styled to match the site. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #2c3745 var(--bg);
+}
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-left: 1px solid var(--line);
+}
+::-webkit-scrollbar-thumb {
+  background: #2c3745;
+  border: 3px solid var(--bg);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand);
+}
+::selection {
+  background: rgba(91, 214, 106, 0.35);
 }
 
 body {
-  background: radial-gradient(ellipse at top, #10261a 0%, var(--background) 55%) no-repeat, var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+}
+
+/* Pixel-art grass strip used on the landing page and register flow. */
+.pixel-ground {
+  height: 44px;
+  image-rendering: pixelated;
+  background:
+    linear-gradient(90deg, transparent 0 60%, rgba(0, 0, 0, 0.12) 60% 100%) 0 0 / 96px 100%,
+    linear-gradient(#5bd66a 0 12px, #3f9a4b 12px 18px, #8a5a36 18px 32px, #5b6b86 32px 100%);
+  background-repeat: repeat-x;
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes hop {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-14px); }
+  60% { transform: translateY(-14px); }
+}
+
+@keyframes heart-rise {
+  0% { transform: translateY(8px) scale(0.8); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(-26px) scale(1.15); opacity: 0; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes hero-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes shine {
+  to { transform: translateX(260%) skewX(-20deg); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(91, 214, 106, 0.6); }
+  50% { box-shadow: 0 0 0 6px rgba(91, 214, 106, 0); }
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+@keyframes glow-drift {
+  0%, 100% { transform: translate(-10%, 0) scale(1); }
+  50% { transform: translate(10%, -8%) scale(1.15); }
+}
+
+@keyframes swap-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes tag-in {
+  0% { opacity: 0; transform: scale(0.6); }
+  70% { transform: scale(1.08); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes sweep {
+  from { transform: translateX(-120%) skewX(-20deg); opacity: 0.9; }
+  to { transform: translateX(320%) skewX(-20deg); opacity: 0; }
+}
+
+.anim-swap { animation: swap-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.anim-tag-in { animation: tag-in 0.4s cubic-bezier(0.2, 0.8, 0.3, 1) backwards; }
+.anim-sweep { animation: sweep 0.8s ease-out both; }
+.anim-draw-circle { stroke-dasharray: 151; stroke-dashoffset: 151; animation: draw 0.6s ease-out 0.1s forwards; }
+.anim-draw-check { stroke-dasharray: 36; stroke-dashoffset: 36; animation: draw 0.4s ease-out 0.6s forwards; }
+.anim-pop { animation: pop 0.35s ease-out; }
+.anim-glow { animation: glow-drift 9s ease-in-out infinite; }
+.anim-float { animation: float-y 5s ease-in-out infinite; }
+.anim-float-slow { animation: float-y 7s ease-in-out infinite; }
+.anim-hop { animation: hop 1.8s ease-in-out infinite; }
+.anim-heart { animation: heart-rise 2.4s ease-out infinite; }
+.anim-twinkle { animation: twinkle 3s ease-in-out infinite; }
+.anim-hero { animation: hero-in 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.anim-pulse-dot { animation: pulse-dot 2s ease-out infinite; }
+
+/* Scroll reveal: Reveal.tsx adds .is-visible when the element enters the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Interactive lift for cards. */
+.lift {
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.lift:hover {
+  transform: translateY(-4px);
+  border-color: rgba(91, 214, 106, 0.55);
+  box-shadow: 0 12px 32px -12px rgba(91, 214, 106, 0.35);
+}
+
+/* Shine sweep on primary buttons. */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+.btn-shine:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.btn-shine:active { transform: translateY(0); }
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -60%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: skewX(-20deg);
+}
+.btn-shine:hover::after { animation: shine 0.8s ease; }
+
+/* Small touches. */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Nav links: underline grows from the left on hover. */
+.nav-link {
+  position: relative;
+  transition: color 0.2s;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2px;
+  background: var(--brand);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+/* Step numbers and team avatars react to their card being hovered. */
+.badge-pop {
+  transition: transform 0.3s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.lift:hover .badge-pop {
+  transform: rotate(-8deg) scale(1.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .reveal { opacity: 1; transform: none; }
 }
