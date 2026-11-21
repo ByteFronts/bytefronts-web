@@ -1,10 +1,20 @@
 "use server";
 
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { AGE_RANGES, EDITIONS, LANGUAGES, PLAY_STYLES, TIMEZONES } from "@/lib/config";
+import {
+  AVATAR_SOURCES,
+  BANNER_COLORS,
+  EDITIONS,
+  LOOKING_FOR,
+  PLAY_STYLES,
+  PLAY_TIMES,
+  VIBES,
+} from "@/lib/config";
+import { getDiscordIdentity, normalizeProfile, PROFILE_COLUMNS, type Profile } from "@/lib/profile";
 
 export type FormState = {
   ok?: boolean;
@@ -29,47 +39,44 @@ export async function signInWithDiscord() {
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/register");
+  redirect("/");
 }
 
+const values = <T extends readonly { value: string }[]>(list: T) =>
+  list.map((x) => x.value) as [string, ...string[]];
+
 const schema = z.object({
+  display_name: z.string().trim().min(1, "Enter a display name").max(32, "Max 32 characters"),
   minecraft_username: z
     .string()
     .trim()
     .regex(/^[A-Za-z0-9_. ]{3,32}$/, "3–32 characters: letters, numbers, spaces, _ or ."),
-  edition: z.enum(EDITIONS.map((e) => e.value) as [string, ...string[]], {
-    error: "Choose an edition",
-  }),
-  play_styles: z
-    .array(z.enum(PLAY_STYLES.map((p) => p.value) as [string, ...string[]]))
-    .min(1, "Pick at least one play style")
-    .max(8),
-  timezone: z.enum(TIMEZONES.map((t) => t.value) as [string, ...string[]], {
-    error: "Choose a timezone",
-  }),
-  language: z.enum(LANGUAGES, { error: "Choose a language" }),
-  age_range: z.enum(AGE_RANGES.map((a) => a.value) as [string, ...string[]], {
-    error: "Choose an age range",
-  }),
-  bio: z.string().trim().max(280, "Max 280 characters").optional(),
-  consent: z.literal("on", { error: "You need to agree to continue" }),
+  edition: z.enum(values(EDITIONS), { error: "Choose an edition" }),
+  bio: z.string().trim().max(200, "Max 200 characters"),
+  play_styles: z.array(z.enum(values(PLAY_STYLES))).min(1, "Pick at least one play style").max(8),
+  play_time: z.enum(values(PLAY_TIMES), { error: "Choose when you play" }),
+  vibe: z.enum(values(VIBES), { error: "Choose a vibe" }),
+  looking_for: z.array(z.enum(values(LOOKING_FOR))).min(1, "Pick at least one"),
+  banner_color: z.enum(BANNER_COLORS.map((c) => c.value) as [string, ...string[]]),
+  avatar_source: z.enum(values(AVATAR_SOURCES)),
+  show_in_matching: z.boolean(),
+  show_discord_name: z.boolean(),
+  recommend_servers: z.boolean(),
 });
 
-export async function saveRegistration(_prev: FormState, formData: FormData): Promise<FormState> {
-  const parsed = schema.safeParse({
-    minecraft_username: formData.get("minecraft_username"),
-    edition: formData.get("edition"),
-    play_styles: formData.getAll("play_styles"),
-    timezone: formData.get("timezone"),
-    language: formData.get("language"),
-    age_range: formData.get("age_range"),
-    bio: formData.get("bio") || undefined,
-    consent: formData.get("consent"),
-  });
+// The register form only collects some fields; the rest keep their current/default values.
+const REGISTER_FIELDS = new Set([
+  "minecraft_username",
+  "edition",
+  "play_styles",
+  "play_time",
+  "looking_for",
+  "bio",
+]);
 
-  if (!parsed.success) {
-    return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
-  }
+export async function saveProfile(_prev: FormState, formData: FormData): Promise<FormState> {
+  const mode = formData.get("_form") === "settings" ? "settings" : "register";
+  const fromForm = (key: string) => mode === "settings" || REGISTER_FIELDS.has(key);
 
   const supabase = await createClient();
   const {
@@ -77,38 +84,82 @@ export async function saveRegistration(_prev: FormState, formData: FormData): Pr
   } = await supabase.auth.getUser();
   if (!user) return { error: "Your session expired. Please log in with Discord again." };
 
+  const { data: existingRow } = await supabase
+    .from("registrations")
+    .select(PROFILE_COLUMNS)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const discordIdentity = getDiscordIdentity(user);
+  const base: Profile = normalizeProfile(existingRow);
+  if (!base.display_name) base.display_name = discordIdentity.name;
+
+  const text = (key: keyof Profile) => {
+    const v = formData.get(key);
+    return fromForm(key) && typeof v === "string" ? v : (base[key] as string);
+  };
+  const list = (key: keyof Profile) =>
+    fromForm(key) ? formData.getAll(key).map(String) : (base[key] as string[]);
+  const flag = (key: keyof Profile) => (fromForm(key) ? formData.get(key) === "on" : (base[key] as boolean));
+
+  const parsed = schema.safeParse({
+    display_name: text("display_name"),
+    minecraft_username: text("minecraft_username"),
+    edition: text("edition"),
+    bio: text("bio"),
+    play_styles: list("play_styles"),
+    play_time: text("play_time"),
+    vibe: text("vibe"),
+    looking_for: list("looking_for"),
+    banner_color: text("banner_color"),
+    avatar_source: text("avatar_source"),
+    show_in_matching: flag("show_in_matching"),
+    show_discord_name: flag("show_discord_name"),
+    recommend_servers: flag("recommend_servers"),
+  });
+
+  const isNew = !existingRow;
+  const consentFieldErrors: Record<string, string[]> =
+    isNew && formData.get("consent") !== "on" ? { consent: ["You need to agree to continue"] } : {};
+
+  if (!parsed.success || Object.keys(consentFieldErrors).length) {
+    return {
+      fieldErrors: {
+        ...(parsed.success ? {} : z.flattenError(parsed.error).fieldErrors),
+        ...consentFieldErrors,
+      },
+    };
+  }
+
   // Take the Discord ID from the verified login, never from the form.
   const discord = user.identities?.find((i) => i.provider === "discord");
   const meta = user.user_metadata ?? {};
   const discordId: string | undefined =
     discord?.identity_data?.provider_id ?? meta.provider_id ?? discord?.identity_data?.sub ?? meta.sub;
   if (!discordId) return { error: "Couldn't read your Discord ID. Please log in again." };
-  const discordUsername: string | null =
-    meta.custom_claims?.global_name ?? meta.full_name ?? meta.name ?? null;
 
-  const values = {
-    minecraft_username: parsed.data.minecraft_username,
-    edition: parsed.data.edition,
-    play_styles: parsed.data.play_styles,
-    timezone: parsed.data.timezone,
-    language: parsed.data.language,
-    age_range: parsed.data.age_range,
-    bio: parsed.data.bio,
-  };
+  const now = new Date().toISOString();
   const { error } = await supabase.from("registrations").upsert(
     {
       user_id: user.id,
       discord_id: discordId,
-      discord_username: discordUsername,
-      ...values,
-      bio: values.bio ?? null,
-      consent_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      discord_username: discordIdentity.name,
+      ...parsed.data,
+      bio: parsed.data.bio || null,
+      ...(isNew ? { consent_at: now } : {}),
+      updated_at: now,
     },
     { onConflict: "user_id" },
   );
 
-  if (error) return { error: "Something went wrong saving your registration. Please try again." };
+  if (error) {
+    // 42703 / PGRST204 = a column doesn't exist, i.e. the SQL migration hasn't been run.
+    if (error.code === "42703" || error.code === "PGRST204") {
+      return { error: "The database is missing the latest update. Run supabase/migrations/002_profile_redesign.sql in Supabase." };
+    }
+    return { error: "Something went wrong saving your profile. Please try again." };
+  }
+
+  revalidatePath("/profile");
   return { ok: true };
 }
 

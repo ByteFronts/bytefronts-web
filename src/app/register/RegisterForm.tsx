@@ -1,201 +1,136 @@
 "use client";
 
-import { useActionState } from "react";
-import { saveRegistration, type FormState } from "./actions";
-import { AGE_RANGES, EDITIONS, LANGUAGES, PLAY_STYLES, TIMEZONES, siteConfig } from "@/lib/config";
+import { useActionState, useState } from "react";
+import Link from "next/link";
+import { saveProfile, signOut, type FormState } from "./actions";
+import { Steps } from "./RegisterShell";
+import Avatar from "@/components/Avatar";
+import Confetti from "@/components/Confetti";
+import { Chips, ErrorBanner, Field, Segmented, inputClass } from "@/components/form/controls";
+import { EDITIONS, LOOKING_FOR, PLAY_STYLES, PLAY_TIMES, siteConfig } from "@/lib/config";
 
-export type Defaults = {
-  minecraft_username?: string;
-  edition?: string;
-  play_styles?: string[];
-  timezone?: string;
-  language?: string;
-  age_range?: string;
-  bio?: string | null;
-};
+const card = "rounded-2xl border border-line bg-surface p-6 shadow-xl shadow-black/20";
 
-const input =
-  "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-emerald-400 focus:outline-none";
-const label = "mb-1.5 block text-sm font-medium text-white/80";
-
-function FieldError({ errors }: { errors?: string[] }) {
-  if (!errors?.length) return null;
-  return <p className="mt-1 text-xs text-red-400">{errors[0]}</p>;
-}
-
-export default function RegisterForm({
-  defaults,
-  isUpdate,
-}: {
-  defaults: Defaults;
-  isUpdate: boolean;
-}) {
-  const [state, action, pending] = useActionState<FormState, FormData>(saveRegistration, {});
+export default function RegisterForm({ discordName, discordAvatar }: { discordName: string; discordAvatar: string | null }) {
+  const [state, action, pending] = useActionState<FormState, FormData>(saveProfile, {});
   const fe = state.fieldErrors ?? {};
 
-  return (
-    <form action={action} className="space-y-5">
-      <div>
-        <label className={label} htmlFor="minecraft_username">
-          Minecraft username
-        </label>
-        <input
-          id="minecraft_username"
-          name="minecraft_username"
-          defaultValue={defaults.minecraft_username}
-          placeholder="Steve"
-          className={input}
-          required
-        />
-        <FieldError errors={fe.minecraft_username} />
-      </div>
+  const [edition, setEdition] = useState("java");
+  const [styles, setStyles] = useState<string[]>([]);
+  const [playTime, setPlayTime] = useState("evenings");
+  const [lookingFor, setLookingFor] = useState<string[]>(["friends"]);
+  const [bio, setBio] = useState("");
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label className={label} htmlFor="edition">
-            Edition
-          </label>
-          <select id="edition" name="edition" defaultValue={defaults.edition ?? ""} className={input} required>
-            <option value="" disabled>
-              Select…
-            </option>
-            {EDITIONS.map((e) => (
-              <option key={e.value} value={e.value}>
-                {e.label}
-              </option>
-            ))}
-          </select>
-          <FieldError errors={fe.edition} />
-        </div>
-        <div>
-          <label className={label} htmlFor="age_range">
-            Age range
-          </label>
-          <select id="age_range" name="age_range" defaultValue={defaults.age_range ?? ""} className={input} required>
-            <option value="" disabled>
-              Select…
-            </option>
-            {AGE_RANGES.map((a) => (
-              <option key={a.value} value={a.value}>
-                {a.label}
-              </option>
-            ))}
-          </select>
-          <FieldError errors={fe.age_range} />
-        </div>
-      </div>
-
-      <fieldset>
-        <legend className={label}>How do you like to play?</legend>
-        <div className="flex flex-wrap gap-2">
-          {PLAY_STYLES.map((p) => (
-            <label
-              key={p.value}
-              className="cursor-pointer rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white/80 has-[:checked]:border-emerald-400 has-[:checked]:bg-emerald-400/15 has-[:checked]:text-emerald-200"
-            >
-              <input
-                type="checkbox"
-                name="play_styles"
-                value={p.value}
-                defaultChecked={defaults.play_styles?.includes(p.value)}
-                className="sr-only"
-              />
-              {p.label}
-            </label>
-          ))}
-        </div>
-        <FieldError errors={fe.play_styles} />
-      </fieldset>
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label className={label} htmlFor="timezone">
-            Timezone
-          </label>
-          <select id="timezone" name="timezone" defaultValue={defaults.timezone ?? ""} className={input} required>
-            <option value="" disabled>
-              Select…
-            </option>
-            {TIMEZONES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-          <FieldError errors={fe.timezone} />
-        </div>
-        <div>
-          <label className={label} htmlFor="language">
-            Main language
-          </label>
-          <select id="language" name="language" defaultValue={defaults.language ?? ""} className={input} required>
-            <option value="" disabled>
-              Select…
-            </option>
-            {LANGUAGES.map((l) => (
-              <option key={l} value={l}>
-                {l}
-              </option>
-            ))}
-          </select>
-          <FieldError errors={fe.language} />
-        </div>
-      </div>
-
-      <div>
-        <label className={label} htmlFor="bio">
-          About you <span className="text-white/40">(optional)</span>
-        </label>
-        <textarea
-          id="bio"
-          name="bio"
-          rows={3}
-          maxLength={280}
-          defaultValue={defaults.bio ?? ""}
-          placeholder="What are you building or looking for?"
-          className={input}
-        />
-        <FieldError errors={fe.bio} />
-      </div>
-
-      <div>
-        <label className="flex items-start gap-2 text-sm text-white/70">
-          <input type="checkbox" name="consent" defaultChecked={isUpdate} className="mt-1 accent-emerald-400" />
-          <span>
-            I&apos;m 13 or older and I agree that {siteConfig.name} stores this information and uses it to
-            match me with other players inside Discord. I can delete it at any time.
-          </span>
-        </label>
-        <FieldError errors={fe.consent} />
-      </div>
-
-      {state.error && (
-        <p className="rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-300">
-          {state.error}
+  if (state.ok) {
+    return (
+      <div className={`${card} anim-hero`}>
+        <Steps step={2} />
+        <Confetti trigger={1} />
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden>
+          <circle cx="28" cy="28" r="24" stroke="#5bd66a" strokeWidth="4" strokeLinecap="round" className="anim-draw-circle" />
+          <path d="M17 29l8 8 15-17" stroke="#5bd66a" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="anim-draw-check" />
+        </svg>
+        <h2 className="mt-4 font-display text-2xl font-bold">You&apos;re in!</h2>
+        <p className="mt-3 text-sm text-muted">
+          Your profile is saved. Open our Discord server and the matching bot will message you when it finds your
+          squad.
         </p>
-      )}
-      {state.ok && (
-        <div className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
-          <p className="font-medium">{isUpdate ? "Saved!" : "You're registered!"}</p>
-          <p className="mt-1 text-emerald-200/80">
-            Join our Discord server so we can match you with other players.
-          </p>
-          <a
-            href={siteConfig.discordInvite}
-            className="mt-3 inline-block rounded-lg bg-emerald-400 px-4 py-2 font-medium text-black hover:bg-emerald-300"
-          >
-            Join the Discord
-          </a>
-        </div>
-      )}
+        <a
+          href={siteConfig.discordInvite}
+          className="btn-shine mt-6 block rounded-lg bg-discord px-4 py-3 text-center text-sm font-semibold text-white"
+        >
+          Open the Discord server
+        </a>
+        <Link
+          href="/profile"
+          className="mt-3 block rounded-lg border border-line bg-bg px-4 py-3 text-center text-sm font-semibold transition hover:border-fg/40"
+        >
+          Edit my profile
+        </Link>
+      </div>
+    );
+  }
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-lg bg-emerald-400 px-4 py-2.5 font-semibold text-black transition hover:bg-emerald-300 disabled:opacity-60"
-      >
-        {pending ? "Saving…" : isUpdate ? "Update registration" : "Register"}
-      </button>
-    </form>
+  return (
+    <div className={card}>
+      <Steps step={2} />
+      <h2 className="font-display text-2xl font-bold">Your player profile</h2>
+
+      <div className="mt-5 flex items-center gap-3 rounded-lg border border-line bg-bg p-3">
+        <Avatar source="discord" discordUrl={discordAvatar} size={32} />
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] text-muted">Logged in with Discord</p>
+          <p className="truncate text-sm font-medium">{discordName}</p>
+        </div>
+        <form action={signOut}>
+          <button className="text-xs text-brand hover:underline">Change</button>
+        </form>
+      </div>
+
+      <form action={action} className="mt-5 space-y-5">
+        <input type="hidden" name="_form" value="register" />
+
+        <Field label="Minecraft username" htmlFor="minecraft_username" error={fe.minecraft_username?.[0]}>
+          <input
+            id="minecraft_username"
+            name="minecraft_username"
+            placeholder="e.g. Steve_Builder"
+            autoComplete="off"
+            className={inputClass}
+            required
+          />
+        </Field>
+
+        <Field label="Edition" error={fe.edition?.[0]}>
+          <Segmented name="edition" value={edition} onChange={setEdition} options={EDITIONS} />
+        </Field>
+
+        <Field label="Play style" hint="Pick all that fit" error={fe.play_styles?.[0]}>
+          <Chips name="play_styles" value={styles} onChange={setStyles} options={PLAY_STYLES} />
+        </Field>
+
+        <Field label="When do you play?" error={fe.play_time?.[0]}>
+          <Segmented name="play_time" value={playTime} onChange={setPlayTime} options={PLAY_TIMES} />
+        </Field>
+
+        <Field label="I am looking for" error={fe.looking_for?.[0]}>
+          <Chips name="looking_for" value={lookingFor} onChange={setLookingFor} options={LOOKING_FOR} />
+        </Field>
+
+        <Field label="About you" htmlFor="bio" hint={`${bio.length} / 200`} error={fe.bio?.[0]}>
+          <textarea
+            id="bio"
+            name="bio"
+            rows={3}
+            maxLength={200}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Tell us a little about how you play..."
+            className={inputClass}
+          />
+        </Field>
+
+        <div>
+          <label className="flex items-start gap-2.5 text-xs text-muted">
+            <input type="checkbox" name="consent" className="mt-0.5 h-4 w-4 accent-[#5bd66a]" />
+            <span>
+              I&apos;m 13 or older and I agree to share this profile with the MineFriend matching system. I can
+              delete it at any time.
+            </span>
+          </label>
+          {fe.consent && <p className="mt-1.5 text-xs text-red-400">{fe.consent[0]}</p>}
+        </div>
+
+        {state.error && <ErrorBanner>{state.error}</ErrorBanner>}
+
+        <button
+          type="submit"
+          disabled={pending}
+          className="btn-shine w-full rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-brand-ink disabled:opacity-60"
+        >
+          {pending ? "Creating…" : "Create my profile"}
+        </button>
+      </form>
+    </div>
   );
 }

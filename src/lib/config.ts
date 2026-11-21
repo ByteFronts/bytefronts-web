@@ -17,40 +17,42 @@ export const EDITIONS = [
 
 export const PLAY_STYLES = [
   { value: "survival", label: "Survival" },
-  { value: "pvp", label: "PvP" },
-  { value: "building", label: "Building" },
+  { value: "creative", label: "Creative" },
   { value: "redstone", label: "Redstone" },
-  { value: "adventure", label: "Adventure" },
+  { value: "pvp", label: "PvP" },
   { value: "minigames", label: "Minigames" },
   { value: "roleplay", label: "Roleplay" },
-  { value: "speedrun", label: "Speedrun" },
+  { value: "building", label: "Building" },
+  { value: "adventure", label: "Adventure" },
 ] as const;
 
-export const AGE_RANGES = [
-  { value: "13-15", label: "13–15" },
-  { value: "16-17", label: "16–17" },
-  { value: "18-24", label: "18–24" },
-  { value: "25+", label: "25+" },
+export const PLAY_TIMES = [
+  { value: "weekdays", label: "Weekdays" },
+  { value: "evenings", label: "Evenings" },
+  { value: "weekends", label: "Weekends" },
 ] as const;
 
-export const LANGUAGES = [
-  "English",
-  "ไทย (Thai)",
-  "Bahasa Indonesia",
-  "Español",
-  "Português",
-  "Français",
-  "Deutsch",
-  "日本語",
-  "한국어",
-  "中文",
-  "Other",
+export const VIBES = [
+  { value: "chill", label: "Chill" },
+  { value: "competitive", label: "Competitive" },
+  { value: "social", label: "Social" },
 ] as const;
 
-export const TIMEZONES = Array.from({ length: 27 }, (_, i) => {
-  const offset = i - 12;
-  const sign = offset < 0 ? "-" : "+";
-  const abs = String(Math.abs(offset)).padStart(2, "0");
-  const value = `UTC${sign}${abs}:00`;
-  return { value, label: value };
-});
+export const LOOKING_FOR = [
+  { value: "friends", label: "Friends" },
+  { value: "servers", label: "Servers" },
+] as const;
+
+export const AVATAR_SOURCES = [
+  { value: "discord", label: "Discord avatar" },
+  { value: "minecraft", label: "Minecraft head" },
+] as const;
+
+export const BANNER_COLORS = [
+  { value: "green", label: "Green", hex: "#5bd66a" },
+  { value: "blue", label: "Blue", hex: "#5865f2" },
+  { value: "orange", label: "Orange", hex: "#f29a4a" },
+  { value: "pink", label: "Pink", hex: "#ec6a9a" },
+  { value: "cyan", label: "Cyan", hex: "#4cc9e0" },
+  { value: "purple", label: "Purple", hex: "#a66cf0" },
+] as const;
