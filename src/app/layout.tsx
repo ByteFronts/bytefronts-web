@@ -13,20 +13,14 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
-const description =
-  "MineFriend matches you with Minecraft players and servers that fit how you play, right inside Discord.";
+const description = `${siteConfig.name} is a small tech startup building tools that make Minecraft more social.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: `${siteConfig.name}: MineFriend, find friends to play Minecraft with`,
+  title: { default: siteConfig.name, template: `%s | ${siteConfig.name}` },
   description,
-  openGraph: {
-    title: `${siteConfig.name}: MineFriend`,
-    description,
-    siteName: siteConfig.name,
-    type: "website",
-  },
-  twitter: { card: "summary", title: `${siteConfig.name}: MineFriend`, description },
+  openGraph: { title: siteConfig.name, description, siteName: siteConfig.name, type: "website" },
+  twitter: { card: "summary", title: siteConfig.name, description },
 };
 
 export const viewport: Viewport = {

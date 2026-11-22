@@ -19,7 +19,7 @@ export default function AppHeader({
       <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-6 py-5 md:px-16">
         <Logo />
         <nav className="hidden items-center gap-10 md:flex">
-          <Link href="/" className={link(false)}>
+          <Link href="/minefriend" className={link(false)}>
             Home
           </Link>
           <a href={siteConfig.discordInvite} className={link(false)}>
