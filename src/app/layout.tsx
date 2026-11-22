@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   title: { default: siteConfig.name, template: `%s | ${siteConfig.name}` },
   description,
   openGraph: { title: siteConfig.name, description, siteName: siteConfig.name, type: "website" },
-  twitter: { card: "summary", title: siteConfig.name, description },
+  twitter: { card: "summary_large_image", title: siteConfig.name, description },
 };
 
 export const viewport: Viewport = {

@@ -19,7 +19,7 @@ type Rect = { l: number; t: number; r: number; b: number };
 // - Elements marked with data-ascii-quiet (inside the parent) keep the ASCII dimmed
 //   behind them so text stays readable.
 // Static when reduced motion is on.
-export default function AsciiField({ className = "" }: { className?: string }) {
+export default function AsciiField({ className = "", rgb = "91, 214, 106" }: { className?: string; rgb?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -137,7 +137,7 @@ export default function AsciiField({ className = "" }: { className?: string }) {
           if (ch === " ") continue;
 
           const q = quietFactor(px, py);
-          ctx.fillStyle = `rgba(91, 214, 106, ${(0.1 + n * 0.6) * q})`;
+          ctx.fillStyle = `rgba(${rgb}, ${(0.1 + n * 0.6) * q})`;
           ctx.fillText(ch, px, py);
         }
       }
@@ -189,7 +189,7 @@ export default function AsciiField({ className = "" }: { className?: string }) {
       parent.removeEventListener("pointerleave", onLeave);
       parent.removeEventListener("pointerdown", onDown);
     };
-  }, []);
+  }, [rgb]);
 
   return <canvas ref={canvasRef} aria-hidden className={`pointer-events-none absolute inset-0 h-full w-full ${className}`} />;
 }

@@ -186,6 +186,16 @@ body {
   box-shadow: 0 12px 32px -12px rgba(91, 214, 106, 0.35);
 }
 
+/* Black-and-white pages (home): neutral card hover and white text highlight instead of green. */
+.mono .lift:hover {
+  border-color: rgba(242, 245, 247, 0.5);
+  box-shadow: 0 12px 32px -12px rgba(242, 245, 247, 0.18);
+}
+.mono *::selection {
+  background: #f2f5f7;
+  color: #0b0f14;
+}
+
 /* Shine sweep on primary buttons. */
 .btn-shine {
   position: relative;
