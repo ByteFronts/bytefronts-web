@@ -1,30 +1,25 @@
 import Link from "next/link";
 import HeaderAuth from "@/components/HeaderAuth";
 import Logo from "@/components/Logo";
-import MatchShowcase from "@/components/MatchShowcase";
 import AsciiField from "@/components/AsciiField";
 import PixelScene from "@/components/PixelScene";
 import Reveal from "@/components/Reveal";
 import ScrollUi from "@/components/ScrollUi";
 import { siteConfig } from "@/lib/config";
 
-const kinds = [
+const projects = [
   {
-    title: "Match friends",
-    body: "Tell us your play style and what you enjoy. We pair you with players you will actually want to play with, then connect you on Discord.",
-    tags: ["Play style", "Interests", "Schedule"],
+    title: "MineFriend",
+    body: "Minecraft matching built around how you play. Find friends and servers that fit your style, right inside Discord.",
+    tags: ["Friends", "Servers", "Discord"],
+    href: "/minefriend",
+    cta: "Open MineFriend",
   },
   {
-    title: "Match servers by play style",
-    body: "Survival, creative, PvP, minigames. We help you find a server whose community and gameplay fit the way you like to play.",
-    tags: ["Survival", "Creative", "PvP", "Minigames"],
+    title: "More on the way",
+    body: "We are a small team and MineFriend is just the start. More tools that make Minecraft more social are coming.",
+    tags: ["Soon"],
   },
-];
-
-const steps = [
-  { title: "Login with Discord", body: "One click, no passwords." },
-  { title: "Share your play style", body: "Name, interests, and how you like to play." },
-  { title: "Get matched", body: "Our Discord matching system finds your friends and servers." },
 ];
 
 const team = [
@@ -53,36 +48,23 @@ export default function Home() {
       <main className="flex-1">
         <section className="relative">
           <PixelScene />
-          <div className="relative mx-auto grid w-full max-w-6xl gap-10 px-6 pb-24 pt-12 md:grid-cols-2 md:pt-16">
-            <div>
-              <span className="anim-hero inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs text-fg/80">
-                <span className="anim-pulse-dot h-1.5 w-1.5 rounded-full bg-brand" /> Our latest work
-              </span>
-              <h1
-                className="anim-hero mt-6 font-display text-6xl font-bold tracking-tight sm:text-7xl"
-                style={{ animationDelay: "0.1s" }}
+          <div className="relative mx-auto w-full max-w-4xl px-6 pb-28 pt-16 text-center md:pt-24">
+            <h1 className="anim-hero font-display text-6xl font-bold tracking-tight sm:text-7xl">
+              Byte<span className="bg-gradient-to-r from-brand to-[#9af2a4] bg-clip-text text-transparent">Fronts</span>
+            </h1>
+            <p className="anim-hero mx-auto mt-6 max-w-xl text-lg text-muted" style={{ animationDelay: "0.1s" }}>
+              A small tech startup building tools that make Minecraft more social.
+            </p>
+            <div className="anim-hero mt-8 flex flex-wrap justify-center gap-3" style={{ animationDelay: "0.2s" }}>
+              <a href="#work" data-scene-trigger className={btnBrand}>
+                View our work
+              </a>
+              <a
+                href={siteConfig.discordInvite}
+                className="rounded-lg border border-line bg-surface px-5 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-fg/40"
               >
-                Mine<span className="bg-gradient-to-r from-brand to-[#9af2a4] bg-clip-text text-transparent">Friend</span>
-              </h1>
-              <p className="anim-hero mt-6 max-w-md text-lg text-muted" style={{ animationDelay: "0.2s" }}>
-                Minecraft matching, built around how you play. Find friends who match your style, and servers that
-                match it too.
-              </p>
-              <div className="anim-hero mt-8 flex flex-wrap gap-3" style={{ animationDelay: "0.3s" }}>
-                <Link href="/register" data-scene-trigger className={btnBrand}>
-                  Try MineFriend with Discord
-                </Link>
-                <a
-                  href="#how"
-                  className="rounded-lg border border-line bg-surface px-5 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-fg/40"
-                >
-                  See how it works
-                </a>
-              </div>
-            </div>
-
-            <div className="anim-hero" style={{ animationDelay: "0.35s" }}>
-              <MatchShowcase />
+                Join the community
+              </a>
             </div>
           </div>
           <div className="pixel-ground" aria-hidden />
@@ -92,58 +74,37 @@ export default function Home() {
           <div className="mx-auto w-full max-w-6xl px-6">
             <Reveal>
               <p className="text-xs font-medium uppercase tracking-wide text-brand">Our work</p>
-              <h2 className="mt-4 font-display text-3xl font-bold sm:text-4xl">One project, two kinds of matches</h2>
+              <h2 className="mt-4 font-display text-3xl font-bold sm:text-4xl">What we&apos;re building</h2>
             </Reveal>
             <div className="mt-10 grid gap-5 md:grid-cols-2">
-              {kinds.map((k, i) => (
-                <Reveal key={k.title} delay={i * 120} className="lift rounded-2xl border border-line bg-card p-8">
-                  <h3 className="font-display text-2xl font-semibold">{k.title}</h3>
-                  <p className="mt-4 text-muted">{k.body}</p>
+              {projects.map((p, i) => (
+                <Reveal key={p.title} delay={i * 120} className="lift rounded-2xl border border-line bg-card p-8">
+                  <h3 className="font-display text-2xl font-semibold">{p.title}</h3>
+                  <p className="mt-4 text-muted">{p.body}</p>
                   <div className="mt-6 flex flex-wrap gap-2">
-                    {k.tags.map((t) => (
-                      <span
-                        key={t}
-                        className="cursor-default rounded-full border border-line bg-surface px-3 py-1 text-xs transition hover:-translate-y-0.5 hover:border-brand/70 hover:text-brand"
-                      >
+                    {p.tags.map((t) => (
+                      <span key={t} className="rounded-full border border-line bg-surface px-3 py-1 text-xs">
                         {t}
                       </span>
                     ))}
                   </div>
+                  {p.href && (
+                    <Link href={p.href} className={`${btnBrand} mt-8 inline-block`}>
+                      {p.cta}
+                    </Link>
+                  )}
                 </Reveal>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="how" className="py-20">
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <Reveal>
-              <h2 className="font-display text-3xl font-bold sm:text-4xl">Three steps to your squad</h2>
-            </Reveal>
-            <ol className="mt-10 grid gap-5 md:grid-cols-3">
-              {steps.map((s, i) => (
-                <Reveal as="li" key={s.title} delay={i * 120} className="lift rounded-2xl border border-line bg-surface p-6">
-                  <span className="flex h-8 w-8 items-center justify-center badge-pop rounded-lg bg-brand text-sm font-bold text-brand-ink">
-                    {i + 1}
-                  </span>
-                  <h3 className="mt-4 font-display text-lg font-semibold">{s.title}</h3>
-                  <p className="mt-2 text-sm text-muted">{s.body}</p>
-                </Reveal>
-              ))}
-            </ol>
-          </div>
-        </section>
-
-        <section id="team" className="relative overflow-hidden bg-surface/60 py-20">
+        <section id="team" className="relative overflow-hidden py-20">
           <AsciiField />
           <div className="relative mx-auto w-full max-w-6xl px-6">
             <Reveal>
               <p data-ascii-quiet className="w-fit text-xs font-medium uppercase tracking-wide text-brand">The team</p>
               <h2 data-ascii-quiet className="mt-4 w-fit font-display text-3xl font-bold sm:text-4xl">Who&apos;s behind the work</h2>
-              <p data-ascii-quiet className="mt-6 max-w-xl text-fg/75">
-                {siteConfig.name} is a small tech startup building tools that make Minecraft more social. MineFriend
-                is our first project.
-              </p>
             </Reveal>
             <div className="mt-10 grid gap-5 md:grid-cols-3">
               {team.map((m, i) => (
@@ -168,29 +129,20 @@ export default function Home() {
               className="anim-glow pointer-events-none absolute left-1/2 top-0 h-64 w-[34rem] -translate-x-1/2 rounded-full bg-brand/20 blur-3xl"
             />
             <div className="relative">
-              <div aria-hidden className="mb-6 flex justify-center">
-                {["bg-discord", "bg-brand", "bg-[#f29a4a]", "bg-[#ec6a9a]"].map((c, i) => (
-                  <span
-                    key={c}
-                    className={`anim-float h-11 w-11 rounded-full border-4 border-surface ${c} ${i ? "-ml-3" : ""}`}
-                    style={{ animationDelay: `${i * -1.1}s` }}
-                  />
-                ))}
-              </div>
-              <h2 className="font-display text-3xl font-bold sm:text-5xl">Ready to find your squad?</h2>
+              <h2 className="font-display text-3xl font-bold sm:text-5xl">Say hi</h2>
               <p className="mx-auto mt-4 max-w-md text-muted">
-                Log in with Discord, share how you play, and get matched with friends and servers in minutes.
+                Questions, ideas, or just want to hang out? Join us on Discord.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <Link href="/register" className={btnBrand}>
-                  Try MineFriend with Discord
-                </Link>
-                <a
-                  href={siteConfig.discordInvite}
-                  className="rounded-lg border border-line bg-bg px-5 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-fg/40"
-                >
+                <a href={siteConfig.discordInvite} className={btnBrand}>
                   Join the community
                 </a>
+                <Link
+                  href="/minefriend"
+                  className="rounded-lg border border-line bg-bg px-5 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-fg/40"
+                >
+                  Try MineFriend
+                </Link>
               </div>
             </div>
             <div className="pixel-ground absolute inset-x-0 bottom-0" aria-hidden />
