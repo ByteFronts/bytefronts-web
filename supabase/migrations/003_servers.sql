@@ -18,7 +18,25 @@ create table if not exists public.servers (
   updated_at       timestamptz not null default now()
 );
 
+-- The website validates these too; the database enforces them for direct API calls.
+alter table public.servers drop constraint if exists servers_address_format;
+alter table public.servers add constraint servers_address_format
+  check (char_length(address) <= 260 and address ~ '^[a-z0-9]([a-z0-9.-]*[a-z0-9])?(:[0-9]{1,5})?$');
+alter table public.servers drop constraint if exists servers_invite_format;
+alter table public.servers add constraint servers_invite_format
+  check (discord_invite is null or discord_invite ~ '^https://(discord\.gg|discord\.com/invite)/[A-Za-z0-9_-]+$');
+alter table public.servers drop constraint if exists servers_play_styles_valid;
+alter table public.servers add constraint servers_play_styles_valid
+  check (cardinality(play_styles) between 1 and 8
+    and play_styles <@ array['survival','creative','redstone','pvp','minigames','roleplay','building','adventure']);
+
 alter table public.servers enable row level security;
+
+-- Only public columns are readable through the API. owner_discord_id and consent_at
+-- stay private (read them in the dashboard / with the service role key).
+revoke select on public.servers from anon, authenticated;
+grant select (id, owner_id, name, address, edition, description, play_styles, discord_invite, status, created_at)
+  on public.servers to anon, authenticated;
 
 -- Anyone can see approved servers; owners can also see their own (any status).
 drop policy if exists "read approved servers" on public.servers;

@@ -8,12 +8,16 @@ const HOST = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z
 
 // Returns a lowercase `host` or `host:port`, or null if it isn't a plain server address.
 export function normalizeAddress(input: string): string | null {
-  const v = input.trim().toLowerCase().replace(/\.$/, "");
-  const [host, port, ...rest] = v.split(":");
-  if (rest.length || !HOST.test(host)) return null;
-  if (port !== undefined && !(/^\d{1,5}$/.test(port) && +port >= 1 && +port <= 65535)) return null;
-  return v;
+  const [rawHost, port, ...rest] = input.trim().toLowerCase().split(":");
+  const host = rawHost.replace(/\.$/, "");
+  if (rest.length || host.length > 253 || !HOST.test(host)) return null;
+  if (port === undefined) return host;
+  if (!(/^\d{1,5}$/.test(port) && +port >= 1 && +port <= 65535)) return null;
+  return `${host}:${+port}`;
 }
+
+const INVITE = /^https:\/\/(discord\.gg|discord\.com\/invite)\/[\w-]+$/;
+export const isDiscordInvite = (v: string) => INVITE.test(v);
 
 export const serverSchema = z.object({
   name: z.string().trim().min(1, "Enter a server name").max(48, "Max 48 characters"),

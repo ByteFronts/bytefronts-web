@@ -1,6 +1,18 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { normalizeAddress, serverSchema } from "./servers.ts";
+import { isDiscordInvite, normalizeAddress, serverSchema } from "./servers.ts";
+
+test("normalizeAddress canonicalizes the port and strips a trailing dot before it", () => {
+  assert.equal(normalizeAddress("a.com:025565"), "a.com:25565");
+  assert.equal(normalizeAddress("a.com.:25565"), "a.com:25565");
+});
+
+test("isDiscordInvite only allows https discord invite links", () => {
+  assert.equal(isDiscordInvite("https://discord.gg/abc-1"), true);
+  assert.equal(isDiscordInvite("https://discord.com/invite/abc"), true);
+  assert.equal(isDiscordInvite("javascript:alert(1)"), false);
+  assert.equal(isDiscordInvite("https://evil.com/x"), false);
+});
 
 const valid = {
   name: "Cool Server",

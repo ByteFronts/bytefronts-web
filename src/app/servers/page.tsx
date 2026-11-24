@@ -5,6 +5,7 @@ import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { siteConfig, EDITIONS, PLAY_STYLES } from "@/lib/config";
 import { getServerStatus } from "@/lib/server-status";
 import CopyAddress from "@/components/CopyAddress";
+import { isDiscordInvite } from "@/lib/servers";
 
 export const metadata: Metadata = { title: `Servers · ${siteConfig.name}` };
 
@@ -48,7 +49,7 @@ async function ServerItem({ s }: { s: Row }) {
             {label(PLAY_STYLES, p)}
           </span>
         ))}
-        {s.discord_invite && (
+        {s.discord_invite && isDiscordInvite(s.discord_invite) && (
           <a href={s.discord_invite} className="text-xs text-brand hover:underline" rel="noopener noreferrer">
             Discord
           </a>
