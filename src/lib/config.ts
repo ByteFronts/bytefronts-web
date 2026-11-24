@@ -4,7 +4,7 @@ export const siteConfig = {
   tagline: "Find friends to play Minecraft with.",
   serverName: process.env.NEXT_PUBLIC_SERVER_NAME ?? "Our Minecraft Server",
   serverAddress: process.env.NEXT_PUBLIC_SERVER_ADDRESS ?? "play.example.com",
-  discordInvite: process.env.NEXT_PUBLIC_DISCORD_INVITE ?? "https://discord.gg/your-invite",
+  discordInvite: process.env.NEXT_PUBLIC_DISCORD_INVITE ?? "https://discord.gg/g7PUSepTfx",
 };
 
 export const isPlaceholderServer = siteConfig.serverAddress === "play.example.com";
