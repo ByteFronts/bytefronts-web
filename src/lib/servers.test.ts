@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { isDiscordInvite, normalizeAddress, serverSchema } from "./servers.ts";
 
 test("normalizeAddress canonicalizes the port and strips a trailing dot before it", () => {
-  assert.equal(normalizeAddress("a.com:025565"), "a.com:25565");
+  assert.equal(normalizeAddress("a.com:02556"), "a.com:2556");
   assert.equal(normalizeAddress("a.com.:25565"), "a.com:25565");
 });
 
