@@ -22,17 +22,21 @@ export type FormState = {
   fieldErrors?: Record<string, string[] | undefined>;
 };
 
-export async function signInWithDiscord() {
+const LOGIN_RETURN_PATHS = ["/register", "/servers/register"];
+
+export async function signInWithDiscord(formData?: FormData) {
+  const requested = formData?.get("next");
+  const next = LOGIN_RETURN_PATHS.find((p) => p === requested) ?? "/register";
   const supabase = await createClient();
   const h = await headers();
   const origin = h.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "discord",
-    options: { redirectTo: `${origin}/auth/callback?next=/register`, scopes: "identify" },
+    options: { redirectTo: `${origin}/auth/callback?next=${next}`, scopes: "identify" },
   });
 
-  if (error || !data.url) redirect("/register?error=auth");
+  if (error || !data.url) redirect(`${next}?error=auth`);
   redirect(data.url);
 }
 

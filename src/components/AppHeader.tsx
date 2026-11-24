@@ -25,6 +25,9 @@ export default function AppHeader({
           <a href={siteConfig.discordInvite} className={link(false)}>
             Matches
           </a>
+          <Link href="/servers" className={link(false)}>
+            Servers
+          </Link>
           <Link href="/profile" className={link(active === "profile")}>
             Profile
           </Link>
