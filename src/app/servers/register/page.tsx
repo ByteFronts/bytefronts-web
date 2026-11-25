@@ -10,7 +10,7 @@ import ServerRegisterForm from "./ServerRegisterForm";
 
 export const metadata: Metadata = { title: `Register your server · ${siteConfig.name}` };
 
-const card = "rounded-2xl border border-line bg-surface p-6 shadow-xl shadow-black/20";
+const card = "panel p-6 pb-7";
 
 const serverCopy = {
   eyebrow: "Servers",
@@ -30,7 +30,7 @@ async function ServerRegisterContent({ searchParams }: { searchParams: Promise<{
 
   if (!isSupabaseConfigured()) {
     return (
-      <p className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-200">
+      <p className="notch bg-amber-400/10 px-3 py-2 text-sm text-amber-200">
         Supabase isn&apos;t configured yet. Copy <code>.env.example</code> to <code>.env.local</code> and fill in your
         Supabase URL and key.
       </p>
@@ -46,7 +46,7 @@ async function ServerRegisterContent({ searchParams }: { searchParams: Promise<{
     return (
       <>
         {error && (
-          <p className="mb-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-200">
+          <p className="notch mb-4 bg-amber-400/10 px-3 py-2 text-sm text-amber-200">
             Discord login didn&apos;t complete. Please try again.
           </p>
         )}
@@ -55,7 +55,7 @@ async function ServerRegisterContent({ searchParams }: { searchParams: Promise<{
           <p className="mt-3 text-sm text-muted">Log in with Discord to submit your Minecraft server for listing.</p>
           <form action={signInWithDiscord} className="mt-6">
             <input type="hidden" name="next" value="/servers/register" />
-            <button type="submit" className="btn-shine w-full rounded-lg bg-discord px-4 py-3 text-sm font-semibold text-white">
+            <button type="submit" className="btn btn-discord w-full">
               Continue with Discord
             </button>
           </form>
@@ -79,7 +79,7 @@ async function ServerRegisterContent({ searchParams }: { searchParams: Promise<{
         </p>
         <Link
           href="/servers"
-          className="mt-6 block rounded-lg border border-line bg-bg px-4 py-3 text-center text-sm font-semibold transition hover:border-fg/40"
+          className="btn mt-6 w-full"
         >
           Browse servers
         </Link>

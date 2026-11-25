@@ -8,9 +8,13 @@
   --fg: #f2f5f7;
   --muted: #9aa6b2;
   --brand: #5bd66a;
+  --brand-deep: #3f9a4b; /* the darker grass row; also the pressed edge of green buttons */
   --brand-ink: #07210d;
   --discord: #5865f2;
   --discord-hover: #4752c4;
+  --discord-deep: #3a44b0;
+  --dirt: #8a5a36;
+  --stone: #5b6b86;
 }
 
 @theme inline {
@@ -21,6 +25,7 @@
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
   --color-brand-ink: var(--brand-ink);
   --color-discord: var(--discord);
   --color-discord-hover: var(--discord-hover);
@@ -31,7 +36,7 @@
 html {
   color-scheme: dark;
   scroll-behavior: smooth;
-  scroll-padding-top: 5rem; /* keeps anchored sections clear of the top edge */
+  scroll-padding-top: 5rem; /* keeps anchored sections clear of the sticky header */
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -56,8 +61,6 @@ html {
 ::-webkit-scrollbar-thumb {
   background: #2c3745;
   border: 3px solid var(--bg);
-  border-radius: 8px;
-  transition: background 0.2s;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--brand);
@@ -72,50 +75,158 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Pixel-art grass strip used on the landing page and register flow. */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+
+/* Black-and-white pages (ByteFronts home, legal): re-point the brand tokens for the subtree. */
+.mono {
+  --brand: #f2f5f7;
+  --brand-deep: #9aa6b2;
+  --brand-ink: #0b0f14;
+}
+.mono *::selection {
+  background: #f2f5f7;
+  color: #0b0f14;
+}
+
+/*
+ * Block kit. Everything is cut on a pixel grid: corners are stepped notches instead of
+ * rounded, and depth comes from a bevel (light top edge, dark bottom edge) instead of
+ * borders and soft shadows. In a layer so Tailwind utilities still override them.
+ */
+@layer components {
+  .notch,
+  .panel,
+  .slot,
+  .btn,
+  .chip {
+    --n: 4px;
+    clip-path: polygon(
+      0 var(--n), var(--n) var(--n), var(--n) 0,
+      calc(100% - var(--n)) 0, calc(100% - var(--n)) var(--n), 100% var(--n),
+      100% calc(100% - var(--n)), calc(100% - var(--n)) calc(100% - var(--n)), calc(100% - var(--n)) 100%,
+      var(--n) 100%, var(--n) calc(100% - var(--n)), 0 calc(100% - var(--n))
+    );
+  }
+
+  /* Raised block: a section of UI. */
+  .panel {
+    --n: 6px;
+    background: var(--surface);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.05),
+      inset 0 -4px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  /* Sunken slot: inputs, small readouts, things that hold a value. */
+  .slot {
+    --n: 3px;
+    background: var(--bg);
+    box-shadow:
+      inset 0 3px 0 rgba(0, 0, 0, 0.4),
+      inset 0 -2px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  /* Buttons press down: the bottom edge shrinks when active. */
+  .btn {
+    --n: 3px;
+    --edge: rgba(0, 0, 0, 0.45);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem 0.95rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    background: var(--surface);
+    color: var(--fg);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.12),
+      inset 0 -4px 0 var(--edge);
+    transition: transform 0.08s, filter 0.15s, box-shadow 0.08s;
+  }
+  .btn:hover {
+    filter: brightness(1.1);
+  }
+  .btn:active {
+    transform: translateY(2px);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.12),
+      inset 0 -2px 0 var(--edge);
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    filter: none;
+    transform: none;
+  }
+  /* clip-path hides outlines, so focus is drawn inside the shape. */
+  .btn:focus-visible,
+  .chip:focus-visible {
+    outline: none;
+    box-shadow:
+      inset 0 0 0 2px var(--fg),
+      inset 0 -4px 0 var(--edge);
+  }
+  .btn-brand {
+    --edge: var(--brand-deep);
+    background: var(--brand);
+    color: var(--brand-ink);
+  }
+  .btn-discord {
+    --edge: var(--discord-deep);
+    background: var(--discord);
+    color: #fff;
+  }
+
+  .chip {
+    --n: 2px;
+    --edge: rgba(0, 0, 0, 0.4);
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.7rem 0.4rem;
+    font-size: 0.75rem;
+    background: var(--bg);
+    color: color-mix(in srgb, var(--fg) 80%, transparent);
+    box-shadow: inset 0 -2px 0 var(--edge);
+  }
+  .chip[aria-pressed="true"],
+  .chip[aria-checked="true"],
+  .chip-on {
+    --edge: var(--brand-deep);
+    background: var(--brand);
+    color: var(--brand-ink);
+    font-weight: 500;
+  }
+  button.chip {
+    cursor: pointer;
+    transition: transform 0.08s;
+  }
+  button.chip:active {
+    transform: translateY(1px);
+  }
+}
+
+/* The grass, dirt and stone strip the pages stand on. */
 .pixel-ground {
   height: 44px;
   image-rendering: pixelated;
   background:
     linear-gradient(90deg, transparent 0 60%, rgba(0, 0, 0, 0.12) 60% 100%) 0 0 / 96px 100%,
-    linear-gradient(#5bd66a 0 12px, #3f9a4b 12px 18px, #8a5a36 18px 32px, #5b6b86 32px 100%);
+    linear-gradient(var(--brand) 0 12px, var(--brand-deep) 12px 18px, var(--dirt) 18px 32px, var(--stone) 32px 100%);
   background-repeat: repeat-x;
 }
-
-@keyframes float-y {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes hop {
-  0%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-14px); }
-  60% { transform: translateY(-14px); }
-}
-
-@keyframes heart-rise {
-  0% { transform: translateY(8px) scale(0.8); opacity: 0; }
-  30% { opacity: 1; }
-  100% { transform: translateY(-26px) scale(1.15); opacity: 0; }
-}
-
-@keyframes twinkle {
-  0%, 100% { opacity: 0.15; }
-  50% { opacity: 0.9; }
+.mono .pixel-ground {
+  background:
+    linear-gradient(90deg, transparent 0 60%, rgba(0, 0, 0, 0.18) 60% 100%) 0 0 / 96px 100%,
+    linear-gradient(#f2f5f7 0 12px, #9aa6b2 12px 18px, #3a4552 18px 32px, #222b36 32px 100%);
 }
 
 @keyframes hero-in {
   from { opacity: 0; transform: translateY(18px); }
   to { opacity: 1; transform: none; }
-}
-
-@keyframes shine {
-  to { transform: translateX(260%) skewX(-20deg); }
-}
-
-@keyframes pulse-dot {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(91, 214, 106, 0.6); }
-  50% { box-shadow: 0 0 0 6px rgba(91, 214, 106, 0); }
 }
 
 @keyframes pop {
@@ -124,13 +235,8 @@ body {
   100% { transform: scale(1); }
 }
 
-@keyframes glow-drift {
-  0%, 100% { transform: translate(-10%, 0) scale(1); }
-  50% { transform: translate(10%, -8%) scale(1.15); }
-}
-
 @keyframes swap-in {
-  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: none; }
 }
 
@@ -149,79 +255,20 @@ body {
   to { transform: translateX(320%) skewX(-20deg); opacity: 0; }
 }
 
+@keyframes blink {
+  50% { opacity: 0.25; }
+}
+
 .anim-swap { animation: swap-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 .anim-tag-in { animation: tag-in 0.4s cubic-bezier(0.2, 0.8, 0.3, 1) backwards; }
 .anim-sweep { animation: sweep 0.8s ease-out both; }
 .anim-draw-circle { stroke-dasharray: 151; stroke-dashoffset: 151; animation: draw 0.6s ease-out 0.1s forwards; }
 .anim-draw-check { stroke-dasharray: 36; stroke-dashoffset: 36; animation: draw 0.4s ease-out 0.6s forwards; }
 .anim-pop { animation: pop 0.35s ease-out; }
-.anim-glow { animation: glow-drift 9s ease-in-out infinite; }
-.anim-float { animation: float-y 5s ease-in-out infinite; }
-.anim-float-slow { animation: float-y 7s ease-in-out infinite; }
-.anim-hop { animation: hop 1.8s ease-in-out infinite; }
-.anim-heart { animation: heart-rise 2.4s ease-out infinite; }
-.anim-twinkle { animation: twinkle 3s ease-in-out infinite; }
 .anim-hero { animation: hero-in 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-.anim-pulse-dot { animation: pulse-dot 2s ease-out infinite; }
+.anim-blink { animation: blink 1.6s steps(2, jump-none) infinite; }
 
-/* Scroll reveal: Reveal.tsx adds .is-visible when the element enters the viewport. */
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
-  transition-delay: var(--reveal-delay, 0ms);
-}
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
-/* Interactive lift for cards. */
-.lift {
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-}
-.lift:hover {
-  transform: translateY(-4px);
-  border-color: rgba(91, 214, 106, 0.55);
-  box-shadow: 0 12px 32px -12px rgba(91, 214, 106, 0.35);
-}
-
-/* Black-and-white pages (home): neutral card hover and white text highlight instead of green. */
-.mono .lift:hover {
-  border-color: rgba(242, 245, 247, 0.5);
-  box-shadow: 0 12px 32px -12px rgba(242, 245, 247, 0.18);
-}
-.mono *::selection {
-  background: #f2f5f7;
-  color: #0b0f14;
-}
-
-/* Shine sweep on primary buttons. */
-.btn-shine {
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.2s ease, filter 0.2s ease;
-}
-.btn-shine:hover { transform: translateY(-2px); filter: brightness(1.08); }
-.btn-shine:active { transform: translateY(0); }
-.btn-shine::after {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 -60%;
-  width: 40%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
-  transform: skewX(-20deg);
-}
-.btn-shine:hover::after { animation: shine 0.8s ease; }
-
-/* Small touches. */
-:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 3px;
-  border-radius: 6px;
-}
-
-/* Nav links: underline grows from the left on hover. */
+/* Nav links: a 2px bar under the current page and on hover. */
 .nav-link {
   position: relative;
   transition: color 0.2s;
@@ -231,23 +278,65 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -4px;
+  bottom: -6px;
   height: 2px;
   background: var(--brand);
   transform: scaleX(0);
   transform-origin: left;
+  transition: transform 0.2s steps(4);
+}
+/* ByteFronts pages: smooth underline instead of the pixel steps. */
+.mono .nav-link::after {
   transition: transform 0.25s ease;
 }
-.nav-link:hover::after {
+.nav-link:hover::after,
+.nav-link[aria-current="page"]::after {
   transform: scaleX(1);
 }
 
-/* Step numbers and team avatars react to their card being hovered. */
-.badge-pop {
-  transition: transform 0.3s cubic-bezier(0.3, 1.6, 0.5, 1);
+/* Spotlight.tsx: a near-invisible dot grid, lit up in a circle around --x/--y. */
+@property --x {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 0px;
 }
-.lift:hover .badge-pop {
-  transform: rotate(-8deg) scale(1.15);
+@property --y {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 0px;
+}
+@keyframes spotlight-drift {
+  0%, 100% { --x: 22%; --y: 35%; }
+  50% { --x: 78%; --y: 65%; }
+}
+.spotlight {
+  --x: 70%;
+  --y: 45%;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(242, 245, 247, 0.07) 1px, transparent 1.6px) 0 0 / 24px 24px;
+  animation: spotlight-drift 16s ease-in-out infinite;
+}
+.spotlight[data-pointer] {
+  animation: none;
+}
+.spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle, rgba(242, 245, 247, 0.6) 1px, transparent 1.6px) 0 0 / 24px 24px,
+    radial-gradient(260px circle at var(--x) var(--y), rgba(242, 245, 247, 0.08), transparent 70%);
+  -webkit-mask-image: radial-gradient(260px circle at var(--x) var(--y), #000, transparent 70%);
+  mask-image: radial-gradient(260px circle at var(--x) var(--y), #000, transparent 70%);
+  transition: opacity 0.4s ease;
+}
+.spotlight[data-pointer]::after {
+  opacity: 0;
+}
+.spotlight[data-pointer][data-active]::after {
+  opacity: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -255,5 +344,4 @@ body {
     animation: none !important;
     transition: none !important;
   }
-  .reveal { opacity: 1; transform: none; }
 }

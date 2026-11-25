@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import AppHeader from "@/components/AppHeader";
+import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { siteConfig } from "@/lib/config";
 import { getDiscordIdentity, normalizeProfile, PROFILE_COLUMNS } from "@/lib/profile";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
@@ -28,7 +28,7 @@ async function ProfileContent() {
   // redirecting would bounce between /register and /profile forever.
   if (error) {
     return (
-      <p className="mx-auto mt-16 max-w-md rounded-lg border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-300">
+      <p className="notch mx-auto mt-16 max-w-md bg-red-400/10 px-4 py-3 text-sm text-red-300">
         Couldn&apos;t load your profile. Please refresh, and check the Supabase migration has been run.
       </p>
     );
@@ -41,8 +41,9 @@ async function ProfileContent() {
 
   return (
     <>
-      <AppHeader name={discord.name} avatarUrl={discord.avatarUrl} active="profile" />
+      <SiteHeader current="/profile" />
       <ProfileEditor initial={profile} discordAvatar={discord.avatarUrl} deleteAction={deleteRegistration} />
+      <SiteFooter />
     </>
   );
 }

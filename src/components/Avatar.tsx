@@ -17,7 +17,7 @@ export default function Avatar({
   const src = source === "minecraft" ? minecraftHead(minecraftName ?? "") : discordUrl;
   const style = { width: size, height: size };
   if (!src) {
-    return <span aria-hidden className={`inline-block shrink-0 rounded-full bg-discord ${className}`} style={style} />;
+    return <span aria-hidden className={`inline-block shrink-0 notch bg-discord ${className}`} style={style} />;
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element
@@ -27,7 +27,7 @@ export default function Avatar({
       width={size}
       height={size}
       referrerPolicy="no-referrer"
-      className={`shrink-0 rounded-full bg-discord object-cover ${className}`}
+      className={`shrink-0 notch bg-discord object-cover ${className}`}
       style={style}
     />
   );

@@ -12,14 +12,14 @@ export function Steps({ step }: { step: 1 | 2 }) {
     <div className="mb-5">
       <div className="flex gap-2" aria-hidden>
         {[1, 2].map((n) => (
-          <span key={n} className="h-1 flex-1 overflow-hidden rounded-full bg-line">
+          <span key={n} className="slot h-2.5 flex-1 p-0.5">
             <span
-              className={`block h-full rounded-full bg-brand transition-all duration-700 ${n <= step ? "w-full" : "w-0"}`}
+              className={`block h-full bg-brand transition-all duration-700 ${n <= step ? "w-full" : "w-0"}`}
             />
           </span>
         ))}
       </div>
-      <p className="mt-2 text-[11px] text-muted">Step {step} of 2</p>
+      <p className="mt-2 text-xs text-muted">Step {step} of 2</p>
     </div>
   );
 }
@@ -47,17 +47,17 @@ export default function RegisterShell({
           <Logo />
         </div>
         <div className="relative flex-1 px-8 pb-24 pt-12 md:px-10 md:pb-28 md:pt-16">
-          <p className="text-[11px] font-medium uppercase tracking-widest text-brand">{copy.eyebrow}</p>
-          <h1 className="anim-hero mt-4 font-display [text-shadow:0_2px_14px_var(--surface)] text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+          <p className="text-sm font-medium text-brand">{copy.eyebrow}</p>
+          <h1 className="anim-hero mt-4 font-display text-4xl font-bold leading-[1.05] tracking-tight [text-shadow:0.06em_0.06em_0_var(--brand-deep)] sm:text-5xl">
             {copy.title[0]}
             <br />
             {copy.title[1]}
           </h1>
           <p className="mt-5 max-w-sm text-muted">{copy.blurb}</p>
-          <ul className="mt-6 space-y-2 text-sm text-muted">
+          <ul className="mt-8 space-y-3 text-sm text-fg/80">
             {copy.bullets.map((b) => (
-              <li key={b} className="flex items-center gap-2">
-                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-brand" />
+              <li key={b} className="flex items-center gap-3">
+                <span aria-hidden className="h-2 w-2 shrink-0 bg-brand" />
                 {b}
               </li>
             ))}

@@ -7,7 +7,7 @@ import { signOut, type FormState } from "@/app/register/actions";
 import { Chips, ErrorBanner, Field, Segmented, inputClass } from "@/components/form/controls";
 import { EDITIONS, PLAY_STYLES } from "@/lib/config";
 
-const card = "rounded-2xl border border-line bg-surface p-6 shadow-xl shadow-black/20";
+const card = "panel p-6 pb-7";
 
 export default function ServerRegisterForm({ discordName }: { discordName: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(registerServer, {});
@@ -26,7 +26,7 @@ export default function ServerRegisterForm({ discordName }: { discordName: strin
         </p>
         <Link
           href="/servers"
-          className="mt-6 block rounded-lg border border-line bg-bg px-4 py-3 text-center text-sm font-semibold transition hover:border-fg/40"
+          className="btn mt-6 w-full"
         >
           Browse servers
         </Link>
@@ -38,7 +38,7 @@ export default function ServerRegisterForm({ discordName }: { discordName: strin
     <div className={card}>
       <h2 className="font-display text-2xl font-bold">Register your server</h2>
 
-      <div className="mt-5 flex items-center gap-3 rounded-lg border border-line bg-bg p-3">
+      <div className="slot mt-5 flex items-center gap-3 p-3">
         <div className="min-w-0 flex-1">
           <p className="text-[10px] text-muted">Logged in with Discord</p>
           <p className="truncate text-sm font-medium">{discordName}</p>
@@ -110,7 +110,7 @@ export default function ServerRegisterForm({ discordName }: { discordName: strin
         <button
           type="submit"
           disabled={pending}
-          className="btn-shine w-full rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-brand-ink disabled:opacity-60"
+          className="btn btn-brand w-full"
         >
           {pending ? "Submitting…" : "Submit server"}
         </button>

@@ -17,7 +17,7 @@ import {
 } from "@/lib/config";
 import { bannerGradient, type Profile } from "@/lib/profile";
 
-const card = "scroll-mt-6 rounded-3xl border border-line bg-surface p-6 md:p-8";
+const card = "panel scroll-mt-24 p-6 pb-7 md:p-8 md:pb-9";
 const cardTitle = "font-display text-2xl font-bold";
 const cardSub = "mt-1 text-sm text-muted";
 
@@ -39,9 +39,9 @@ function Preview({ form, discordAvatar }: { form: Profile; discordAvatar: string
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   return (
     <div>
-      <p className="mb-3 text-[11px] font-medium uppercase tracking-wide text-muted">Live preview</p>
+      <p className="mb-3 text-sm text-muted">Live preview</p>
       <div
-        className="overflow-hidden rounded-3xl border border-line bg-surface"
+        className="panel overflow-hidden"
         style={{
           transform: `perspective(900px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
           transition: "transform 0.15s ease-out",
@@ -81,7 +81,7 @@ function Preview({ form, discordAvatar }: { form: Profile; discordAvatar: string
               <p className="truncate font-display text-xl font-bold">{form.display_name || "Your name"}</p>
               <p className="truncate text-xs text-muted">{sub}</p>
             </div>
-            <span className="rounded-md bg-bg px-2 py-1 text-xs font-medium text-brand">92% match</span>
+            <span className="slot px-2 py-1 text-xs font-medium text-brand">92% match</span>
           </div>
           <p className="mt-4 min-h-10 break-words text-sm text-muted">{form.bio || "Your bio shows up here."}</p>
           <div className="mt-4 flex flex-wrap gap-2">
@@ -89,15 +89,15 @@ function Preview({ form, discordAvatar }: { form: Profile; discordAvatar: string
             {form.play_styles.map((s, i) => (
               <span
                 key={s}
-                className={`anim-tag-in rounded-full px-3 py-1 text-xs ${
-                  i === 0 ? "bg-brand font-medium text-brand-ink" : "border border-line bg-bg text-fg/80"
+                className={`anim-tag-in chip ${
+                  i === 0 ? "chip-on" : ""
                 }`}
               >
                 {label(PLAY_STYLES, s)}
               </span>
             ))}
           </div>
-          <div className="mt-5 rounded-lg bg-discord px-4 py-3 text-center text-sm font-semibold text-white">
+          <div className="btn btn-discord pointer-events-none mt-5 w-full">
             Say hi on Discord
           </div>
         </div>
@@ -159,9 +159,9 @@ export default function ProfileEditor({
   const dirty = JSON.stringify(form) !== JSON.stringify(baseline);
 
   return (
-    <div className="mx-auto grid w-full max-w-[1440px] grid-cols-[minmax(0,1fr)] gap-8 px-6 py-8 md:px-16 lg:grid-cols-[232px_minmax(0,1fr)_360px]">
-      <aside className="lg:sticky lg:top-6 lg:self-start">
-        <p className="mb-3 text-[11px] font-medium uppercase tracking-wide text-muted">Settings</p>
+    <div className="mx-auto grid w-full max-w-6xl grid-cols-[minmax(0,1fr)] gap-8 px-6 py-10 lg:grid-cols-[180px_minmax(0,1fr)_320px]">
+      <aside className="lg:sticky lg:top-24 lg:self-start">
+        <p className="mb-3 text-sm text-muted">Settings</p>
         <nav className="flex gap-1 overflow-x-auto lg:flex-col">
           {nav.map((n) => (
             <a
@@ -169,12 +169,12 @@ export default function ProfileEditor({
               href={`#${n.id}`}
               aria-current={active === n.id ? "location" : undefined}
               onClick={() => setActive(n.id)}
-              className={`flex items-center gap-3 whitespace-nowrap rounded-lg px-4 py-2.5 text-[15px] transition ${
+              className={`flex items-center gap-3 notch whitespace-nowrap px-4 py-2.5 text-[15px] transition ${
                 active === n.id ? "bg-surface text-fg" : "text-fg/70 hover:bg-surface/60 hover:text-fg"
               }`}
             >
               <span
-                className={`h-1.5 w-1.5 transition-colors duration-300 ${active === n.id ? "bg-brand" : "bg-line"}`}
+                className={`h-2 w-2 transition-colors duration-300 ${active === n.id ? "bg-brand" : "bg-line"}`}
                 aria-hidden
               />
               {n.label}
@@ -194,7 +194,7 @@ export default function ProfileEditor({
             <h2 className={cardTitle}>Appearance</h2>
             <p className={cardSub}>Pick a banner color and avatar for your profile card.</p>
 
-            <div className="relative mt-6 h-24 max-w-[616px] rounded-xl transition-[background] duration-500" style={{ background: bannerGradient(form.banner_color) }}>
+            <div className="relative mt-6 h-24 max-w-[616px] transition-[background] duration-500" style={{ background: bannerGradient(form.banner_color) }}>
               <Avatar
                 source={form.avatar_source}
                 discordUrl={discordAvatar}
@@ -218,7 +218,7 @@ export default function ProfileEditor({
                       aria-checked={on}
                       aria-label={c.label}
                       onClick={() => set({ banner_color: c.value })}
-                      className={`h-7 w-7 rounded-full transition hover:scale-110 ${on ? "ring-2 ring-fg ring-offset-2 ring-offset-surface" : ""}`}
+                      className={`notch h-8 w-8 transition hover:scale-110 ${on ? "shadow-[inset_0_0_0_3px_var(--fg)]" : ""}`}
                       style={{ background: c.hex }}
                     />
                   );
@@ -349,14 +349,14 @@ export default function ProfileEditor({
               type="button"
               disabled={!dirty || pending}
               onClick={() => setForm(baseline)}
-              className="rounded-lg border border-line bg-bg px-5 py-3 text-sm font-semibold transition hover:border-fg/40 disabled:opacity-40"
+              className="btn"
             >
               Discard changes
             </button>
             <button
               type="submit"
               disabled={!dirty || pending}
-              className="btn-shine rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-brand-ink disabled:opacity-40"
+              className="btn btn-brand"
             >
               {pending ? "Saving…" : "Save changes"}
             </button>
@@ -368,7 +368,7 @@ export default function ProfileEditor({
           <p className={cardSub}>Signed in with Discord. Matching happens in {siteConfig.name}&apos;s Discord server.</p>
           <div className="mt-6 flex flex-wrap items-center gap-4">
             <form action={signOut}>
-              <button className="rounded-lg border border-line bg-bg px-4 py-2.5 text-sm font-semibold transition hover:border-fg/40">
+              <button className="btn">
                 Log out
               </button>
             </form>
@@ -382,7 +382,7 @@ export default function ProfileEditor({
         </section>
       </div>
 
-      <aside className="lg:sticky lg:top-6 lg:self-start">
+      <aside className="lg:sticky lg:top-24 lg:self-start">
         <Preview form={form} discordAvatar={discordAvatar} />
       </aside>
       <Confetti trigger={celebrate} />

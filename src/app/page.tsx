@@ -1,33 +1,12 @@
-import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties } from "react";
 import AsciiField from "@/components/AsciiField";
 import CopyEmail from "@/components/CopyEmail";
 import MatchCard from "@/components/MatchCard";
-import Reveal from "@/components/Reveal";
+import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import Spotlight from "@/components/Spotlight";
 import { siteConfig } from "@/lib/config";
 
-// The home page is strictly black and white: re-point the shared brand tokens for this subtree only.
-const monochrome = { "--brand": "#f2f5f7", "--brand-ink": "#0b0f14" } as CSSProperties;
-
 const email = "contact@bytefronts.com";
-
-const projects = [
-  {
-    title: "MineFriend",
-    status: "Available",
-    body: "Minecraft matching built around how you play. Find friends and servers that fit your style, right inside Discord.",
-    meta: "Friends · Servers · Discord",
-    href: "/minefriend",
-    cta: "Open MineFriend",
-  },
-  {
-    title: "Future products",
-    status: "In development",
-    body: "We are a small team and MineFriend is just the start. More tools that make Minecraft more social are coming.",
-    meta: "Coming soon",
-  },
-];
 
 const team = [
   { name: "sw1ft_z", role: "Founder & Developer", bio: "Don't be afraid to make a difference." },
@@ -35,104 +14,85 @@ const team = [
   { name: "Team member", role: "Role", bio: "Short bio goes here." },
 ];
 
-const btnPrimary =
-  "rounded-md bg-fg px-5 py-2.5 text-sm font-semibold text-bg transition hover:bg-fg/85";
-const btnOutline =
-  "rounded-md border border-fg/40 px-5 py-2.5 text-sm font-semibold transition hover:border-fg hover:bg-fg/5";
-const eyebrow = "text-xs font-medium uppercase tracking-[0.18em] text-muted";
-const heading = "mt-4 text-3xl font-semibold tracking-tight sm:text-4xl";
+const links = [
+  { href: "#work", label: "Our work" },
+  { href: "#team", label: "Team" },
+  { href: "#contact", label: "Contact" },
+];
 
-function Wordmark({ className }: { className: string }) {
-  return (
-    <Image src="/bytefronts-logo.svg" alt={siteConfig.name} width={996} height={225} className={`w-auto invert ${className}`} />
-  );
-}
+const btnPrimary = "rounded-md bg-fg px-5 py-2.5 text-sm font-semibold text-bg transition hover:bg-fg/85";
+const btnOutline = "rounded-md border border-fg/40 px-5 py-2.5 text-sm font-semibold transition hover:border-fg hover:bg-fg/5";
+const h2 = "text-3xl font-semibold tracking-tight sm:text-4xl";
 
+// The ByteFronts company page is strictly black and white (.mono re-points the brand tokens).
 export default function Home() {
   return (
-    <div className="mono contents" style={monochrome}>
-      <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label={siteConfig.name}>
-            <Wordmark className="h-7" />
-          </Link>
-          <nav className="hidden gap-8 text-sm text-fg/80 md:flex">
-            <a href="#work" className="nav-link hover:text-fg">Our work</a>
-            <a href="#team" className="nav-link hover:text-fg">Team</a>
-            <a href="#contact" className="nav-link hover:text-fg">Contact</a>
-          </nav>
-        </div>
-      </header>
+    <div className="mono contents">
+      <SiteHeader mono links={links} />
 
       <main className="flex-1">
-        <section className="border-b border-line">
-          <div className="mx-auto w-full max-w-6xl px-6 py-24 md:py-32">
-            <p className={`anim-hero ${eyebrow}`}>Technology company</p>
-            <h1 className="anim-hero mt-6 max-w-3xl text-4xl font-semibold leading-[1.1] tracking-tight sm:text-6xl" style={{ animationDelay: "0.08s" }}>
-              Software that makes Minecraft more social.
-            </h1>
-            <p className="anim-hero mt-6 max-w-xl text-lg leading-relaxed text-muted" style={{ animationDelay: "0.16s" }}>
-              {siteConfig.name} is a small team building tools that help players find friends and servers that fit the way they play.
+        <section className="relative overflow-hidden border-b border-line">
+          <Spotlight />
+          <div className="relative mx-auto w-full max-w-6xl px-6 pb-20 pt-20 md:pb-28 md:pt-32">
+          <h1 className="anim-hero max-w-4xl text-[clamp(2.75rem,7.5vw,6rem)] font-semibold leading-[1] tracking-[-0.035em]">
+            We build the ideas others overlook.
+          </h1>
+          <div className="anim-hero mt-10 flex flex-col gap-8 md:flex-row md:items-end md:justify-between" style={{ animationDelay: "0.12s" }}>
+            <p className="max-w-md text-lg leading-relaxed text-muted">
+              In a world chasing the future, we choose to build it.
+              <br />
+              Built by gamers, for gamers.
             </p>
-            <div className="anim-hero mt-10 flex flex-wrap gap-3" style={{ animationDelay: "0.24s" }}>
+            <div className="flex flex-wrap gap-3">
               <a href="#work" className={btnPrimary}>View our work</a>
               <a href="#contact" className={btnOutline}>Contact us</a>
             </div>
           </div>
+          </div>
         </section>
 
-        <section id="work" className="border-b border-line py-20">
+        <section id="work" className="border-b border-line py-20 md:py-28">
           <div className="mx-auto w-full max-w-6xl px-6">
-            <Reveal>
-              <p className={eyebrow}>Our work</p>
-              <h2 className={heading}>What we&apos;re building</h2>
-            </Reveal>
-            <div className="mt-12 grid gap-6 md:grid-cols-2">
-              {projects.map((p, i) => (
-                <Reveal
-                  key={p.title}
-                  delay={i * 120}
-                  className={`flex flex-col rounded-md border p-8 transition-colors hover:border-fg/50 ${
-                    p.href ? "border-line bg-surface" : "border-dashed border-line bg-transparent"
-                  }`}
-                >
-                  <p className={eyebrow}>{p.status}</p>
-                  <h3 className="mt-4 text-2xl font-semibold tracking-tight">{p.title}</h3>
-                  <p className="mt-3 leading-relaxed text-muted">{p.body}</p>
-                  <p className="mt-6 text-xs uppercase tracking-wider text-fg/60">{p.meta}</p>
-                  {p.href && (
-                    <>
-                      <div className="mt-6">
-                        <MatchCard
-                          label="Example match"
-                          name="Alex"
-                          subtitle="Java · Evenings · Chill"
-                          match={87}
-                          avatar="brand"
-                          tags={[{ text: "Survival", active: true }, { text: "Redstone" }, { text: "Building" }]}
-                        />
-                      </div>
-                      <Link href={p.href} className={`${btnPrimary} mt-8 w-fit`}>
-                        {p.cta}
-                      </Link>
-                    </>
-                  )}
-                </Reveal>
-              ))}
+            <h2 className={h2}>What we&apos;re building</h2>
+
+            <article className="panel mt-10 grid gap-10 p-8 md:grid-cols-[1fr_minmax(0,24rem)] md:p-12">
+              <div className="flex flex-col">
+                <p className="text-sm text-muted">Available now</p>
+                <h3 className="mt-2 font-display text-4xl font-bold tracking-tight">MineFriend</h3>
+                <p className="mt-4 max-w-md leading-relaxed text-muted">
+                  Minecraft matching built around how you play. Find friends and servers that fit your style, right
+                  inside Discord.
+                </p>
+                <Link href="/minefriend" className="btn btn-brand mt-8 w-fit md:mt-auto">
+                  Open MineFriend
+                </Link>
+              </div>
+              <div className="slot self-start p-4 pb-5">
+                <MatchCard
+                  label="Try it: tap a tag"
+                  name="Alex"
+                  subtitle="Java, evenings, chill"
+                  match={87}
+                  avatar="brand"
+                  tags={[{ text: "Survival", active: true }, { text: "Redstone" }, { text: "Building" }]}
+                />
+              </div>
+            </article>
+
+            <div className="mt-4 flex flex-col gap-2 rounded-md border border-dashed border-line px-8 py-6 sm:flex-row sm:items-center sm:justify-between md:px-12">
+              <h3 className="text-lg font-semibold">Next project</h3>
+              <p className="text-sm text-muted">In development. More tools that make Minecraft more social.</p>
             </div>
           </div>
         </section>
 
-        <section id="team" className="relative overflow-hidden border-b border-line py-20">
+        <section id="team" className="relative overflow-hidden py-20 md:py-28">
           <AsciiField rgb="242, 245, 247" />
           <div className="relative mx-auto w-full max-w-6xl px-6">
-            <Reveal>
-              <p data-ascii-quiet className={`w-fit ${eyebrow}`}>Team</p>
-              <h2 data-ascii-quiet className={`w-fit ${heading}`}>The people behind the work</h2>
-            </Reveal>
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
-              {team.map((m, i) => (
-                <Reveal key={i} delay={i * 120} className="rounded-md border border-line bg-surface p-6">
+            <h2 data-ascii-quiet className={`w-fit ${h2}`}>The people behind the work</h2>
+            <ul className="mt-10 grid gap-4 md:grid-cols-3">
+              {team.map((m) => (
+                <li key={m.name} className="rounded-md border border-line bg-surface p-6">
                   <span
                     aria-hidden
                     className="flex h-12 w-12 items-center justify-center rounded-md border border-line bg-bg text-sm font-semibold uppercase"
@@ -140,42 +100,29 @@ export default function Home() {
                     {m.name.slice(0, 2)}
                   </span>
                   <h3 className="mt-5 text-lg font-semibold">{m.name}</h3>
-                  <p className="mt-1 text-xs uppercase tracking-wider text-muted">{m.role}</p>
-                  <p className="mt-4 text-sm leading-relaxed text-muted">{m.bio}</p>
-                </Reveal>
+                  <p className="text-sm text-muted">{m.role}</p>
+                  <p className="mt-4 text-sm leading-relaxed text-fg/80">{m.bio}</p>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </section>
 
-        <section id="contact" className="py-20">
-          <Reveal className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className={eyebrow}>Contact</p>
-              <h2 className={heading}>Get in touch</h2>
-              <p className="mt-4 max-w-md leading-relaxed text-muted">
-                Questions, partnerships or feedback? Email us or reach the team on our Discord server.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
+        <section id="contact" className="py-20 md:py-28">
+          <div className="mx-auto w-full max-w-6xl px-6">
+            <h2 className={h2}>Get in touch</h2>
+            <p className="mt-4 max-w-md leading-relaxed text-muted">
+              Questions, partnerships or feedback? Copy our email, or reach the team on Discord.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
               <CopyEmail email={email} className={btnPrimary} />
               <a href={siteConfig.discordInvite} className={btnOutline}>Join our Discord</a>
             </div>
-          </Reveal>
+          </div>
         </section>
       </main>
 
-      <footer className="border-t border-line">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-4 px-6 py-8 text-xs text-muted sm:flex-row sm:items-center">
-          <div className="flex items-center gap-4">
-            <Wordmark className="h-4 opacity-70" />
-            <span>© 2026 {siteConfig.name}</span>
-          </div>
-          <span>
-            <a href={`mailto:${email}`} className="hover:text-fg">Contact</a> · <a href={siteConfig.discordInvite} className="hover:text-fg">Discord</a> ·<Link href="/privacy" className="hover:text-fg">Privacy</Link> · <Link href="/terms" className="hover:text-fg">Terms</Link>
-          </span>
-        </div>
-      </footer>
+      <SiteFooter mono />
     </div>
   );
 }
