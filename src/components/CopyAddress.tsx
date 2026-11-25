@@ -19,7 +19,7 @@ export default function CopyAddress({ address }: { address: string }) {
     <button
       type="button"
       onClick={copy}
-      className="rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 font-mono text-sm text-emerald-300 hover:border-emerald-400"
+      className="slot px-3 py-1.5 font-mono text-sm text-brand transition hover:text-fg"
       title="Click to copy"
     >
       {copied ? "Copied!" : address}

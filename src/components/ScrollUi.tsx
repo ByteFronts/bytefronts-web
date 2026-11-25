@@ -34,7 +34,7 @@ export default function ScrollUi() {
       <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-50 h-[3px]">
         <div
           ref={bar}
-          className="h-full origin-left bg-brand shadow-[0_0_10px_rgba(91,214,106,0.7)]"
+          className="h-full origin-left bg-brand"
           style={{ transform: "scaleX(0)" }}
         />
       </div>
@@ -43,7 +43,7 @@ export default function ScrollUi() {
         aria-label="Back to top"
         tabIndex={showTop ? 0 : -1}
         onClick={() => window.scrollTo({ top: 0 })}
-        className={`fixed bottom-6 right-6 z-40 flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-surface/90 text-brand backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-brand/70 active:scale-90 ${
+        className={`btn fixed bottom-6 right-6 z-40 h-11 w-11 p-0 text-brand transition duration-300 ${
           showTop ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
         }`}
       >

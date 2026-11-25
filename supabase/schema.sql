@@ -28,5 +28,7 @@ create policy "update own registration" on public.registrations
 create policy "delete own registration" on public.registrations
   for delete using (auth.uid() = user_id);
 
+-- Owner-submitted servers live in the `servers` table: see migrations/003_servers.sql.
+
 -- The Discord bot should use the SERVICE ROLE key (server-side only, never in the website),
 -- which bypasses these policies and can read every row for matching.

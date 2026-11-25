@@ -33,7 +33,7 @@ export function Field({
 }
 
 export const inputClass =
-  "w-full rounded-lg border border-line bg-bg px-4 py-3 text-sm text-fg placeholder:text-muted/60 transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20";
+  "slot w-full px-4 py-3 text-sm text-fg placeholder:text-muted/60 focus:outline-none focus:shadow-[inset_0_0_0_2px_var(--brand)]";
 
 // Pick exactly one option, shown as equal-width buttons.
 export function Segmented({
@@ -63,11 +63,7 @@ export function Segmented({
             aria-checked={on}
             disabled={disabled}
             onClick={() => onChange(o.value)}
-            className={`rounded-lg border px-3 py-2.5 text-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 ${
-              on
-                ? "border-brand bg-brand font-medium text-brand-ink"
-                : "border-line bg-bg text-fg/80 hover:border-brand/60 hover:text-fg"
-            }`}
+            className="chip justify-center px-3 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-40"
           >
             {o.label}
           </button>
@@ -108,11 +104,7 @@ export function Chips({
             type="button"
             aria-pressed={on}
             onClick={() => toggle(o.value)}
-            className={`rounded-full px-4 py-1.5 text-sm transition active:scale-95 ${
-              on
-                ? "bg-brand font-medium text-brand-ink"
-                : "border border-line bg-bg text-fg/80 hover:border-brand/60 hover:text-fg"
-            }`}
+            className="chip px-4 py-1.5 text-sm"
           >
             {o.label}
           </button>
@@ -150,7 +142,7 @@ export function Toggle({
       />
       <span
         aria-hidden
-        className="relative h-6 w-11 shrink-0 rounded-full bg-line transition peer-checked:bg-brand peer-focus-visible:ring-2 peer-focus-visible:ring-brand/50 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5"
+        className="notch relative h-6 w-11 shrink-0 bg-line transition peer-checked:bg-brand peer-focus-visible:shadow-[inset_0_0_0_2px_var(--fg)] after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:bg-white after:transition-transform peer-checked:after:translate-x-5"
       />
     </label>
   );
@@ -158,6 +150,6 @@ export function Toggle({
 
 export function ErrorBanner({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-300">{children}</p>
+    <p className="notch bg-red-400/10 px-3 py-2 text-sm text-red-300">{children}</p>
   );
 }

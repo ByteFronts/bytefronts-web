@@ -42,12 +42,12 @@ export default function MatchCard({
 
   return (
     <div className="anim-swap">
-      <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted">{label}</p>
+      <p className="mb-2 text-xs text-muted">{label}</p>
       <div
-        className="lift rounded-2xl border border-line bg-surface p-4"
+        className="panel p-4 pb-5"
         style={{
           transform: `perspective(800px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
-          transition: "transform 0.15s ease-out, border-color 0.25s, box-shadow 0.25s",
+          transition: "transform 0.15s ease-out",
         }}
         onPointerMove={(e) => {
           const r = e.currentTarget.getBoundingClientRect();
@@ -61,7 +61,7 @@ export default function MatchCard({
         <div className="flex items-center gap-3">
           <span
             aria-hidden
-            className={`h-9 w-9 shrink-0 rounded-full ${avatar === "brand" ? "bg-brand" : "bg-discord"}`}
+            className={`notch h-9 w-9 shrink-0 ${avatar === "brand" ? "bg-brand" : "bg-discord"}`}
           />
           <div className="min-w-0 flex-1">
             <p className="truncate font-display font-semibold">{name}</p>
@@ -69,7 +69,7 @@ export default function MatchCard({
           </div>
           <span
             key={bump}
-            className="anim-pop rounded-md bg-bg px-2 py-1 text-xs font-medium tabular-nums text-brand"
+            className="anim-pop slot px-2 py-1 text-xs font-medium tabular-nums text-brand"
             aria-live="polite"
           >
             {score}% match
@@ -85,20 +85,16 @@ export default function MatchCard({
                 aria-pressed={on}
                 style={{ animationDelay: `${150 + i * 90}ms` }}
                 onClick={() => toggle(t.text)}
-                className={`anim-tag-in cursor-pointer rounded-full px-3 py-1 text-xs transition active:scale-95 ${
-                  on
-                    ? "bg-brand font-medium text-brand-ink"
-                    : "border border-line bg-bg text-fg/80 hover:border-brand/60 hover:text-fg"
-                }`}
+                className="anim-tag-in chip"
               >
                 {t.text}
               </button>
             );
           })}
         </div>
-        <div className="mt-4 h-1 overflow-hidden rounded-full bg-bg">
+        <div className="slot mt-4 h-2.5 p-0.5">
           <div
-            className="h-full rounded-full bg-brand transition-[width] duration-500 ease-out"
+            className="h-full bg-brand bg-[repeating-linear-gradient(90deg,transparent_0_10px,var(--bg)_10px_12px)] transition-[width] duration-500 ease-out"
             style={{ width: `${score}%` }}
           />
         </div>

@@ -1,16 +1,25 @@
 import Link from "next/link";
-import Logo from "@/components/Logo";
+import PixelScene from "@/components/PixelScene";
+import { SiteHeader } from "@/components/SiteChrome";
 
 export default function NotFound() {
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center px-6 py-20 text-center">
-      <Logo />
-      <p className="mt-12 font-display text-7xl font-bold text-brand">404</p>
-      <h1 className="mt-4 font-display text-2xl font-bold">This chunk hasn&apos;t loaded</h1>
-      <p className="mt-3 text-muted">The page you are looking for doesn&apos;t exist or has moved.</p>
-      <Link href="/" className="btn-shine mt-8 rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-brand-ink">
-        Back to home
-      </Link>
-    </main>
+    <>
+      <SiteHeader />
+      <main className="relative flex flex-1 flex-col">
+        <PixelScene />
+        <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-6 py-20">
+          <p className="font-display text-[clamp(5rem,18vw,11rem)] font-bold leading-none tracking-[-0.04em] [text-shadow:0.05em_0.05em_0_var(--brand-deep)]">
+            404
+          </p>
+          <h1 className="mt-6 font-display text-3xl font-bold">This chunk hasn&apos;t loaded</h1>
+          <p className="mt-3 max-w-md text-muted">The page you&apos;re looking for doesn&apos;t exist or has moved.</p>
+          <Link href="/" className="btn btn-brand mt-8 w-fit">
+            Back to home
+          </Link>
+        </div>
+        <div className="pixel-ground" aria-hidden />
+      </main>
+    </>
   );
 }

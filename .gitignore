@@ -45,3 +45,8 @@ next-env.d.ts
 
 # graphify
 /graphify-out
+# superpowers scratch
+/.superpowers
+
+#docs
+/docs

@@ -10,11 +10,11 @@ import { signInWithDiscord } from "./actions";
 
 export const metadata: Metadata = { title: `Join MineFriend · ${siteConfig.name}` };
 
-const card = "rounded-2xl border border-line bg-surface p-6 shadow-xl shadow-black/20";
+const card = "panel p-6 pb-7";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-200">
+    <p className="notch mb-4 bg-amber-400/10 px-3 py-2 text-sm text-amber-200">
       {children}
     </p>
   );
@@ -51,7 +51,7 @@ async function RegisterContent({ searchParams }: { searchParams: Promise<{ error
           <form action={signInWithDiscord} className="mt-6">
             <button
               type="submit"
-              className="btn-shine w-full rounded-lg bg-discord px-4 py-3 text-sm font-semibold text-white"
+              className="btn btn-discord w-full"
             >
               Continue with Discord
             </button>

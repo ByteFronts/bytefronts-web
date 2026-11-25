@@ -68,8 +68,8 @@ export default function MatchShowcase() {
             aria-selected={i === index}
             aria-label={`Example ${i + 1}`}
             onClick={() => setIndex(i)}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === index ? "w-6 bg-brand" : "w-1.5 bg-line hover:bg-muted"
+            className={`h-2 transition-all duration-300 ${
+              i === index ? "w-6 bg-brand" : "w-2 bg-line hover:bg-muted"
             }`}
           />
         ))}

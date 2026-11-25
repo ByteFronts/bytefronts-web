@@ -9,7 +9,7 @@ import Confetti from "@/components/Confetti";
 import { Chips, ErrorBanner, Field, Segmented, inputClass } from "@/components/form/controls";
 import { EDITIONS, LOOKING_FOR, PLAY_STYLES, PLAY_TIMES, siteConfig } from "@/lib/config";
 
-const card = "rounded-2xl border border-line bg-surface p-6 shadow-xl shadow-black/20";
+const card = "panel p-6 pb-7";
 
 export default function RegisterForm({ discordName, discordAvatar }: { discordName: string; discordAvatar: string | null }) {
   const [state, action, pending] = useActionState<FormState, FormData>(saveProfile, {});
@@ -37,13 +37,13 @@ export default function RegisterForm({ discordName, discordAvatar }: { discordNa
         </p>
         <a
           href={siteConfig.discordInvite}
-          className="btn-shine mt-6 block rounded-lg bg-discord px-4 py-3 text-center text-sm font-semibold text-white"
+          className="btn btn-discord mt-6 w-full"
         >
           Open the Discord server
         </a>
         <Link
           href="/profile"
-          className="mt-3 block rounded-lg border border-line bg-bg px-4 py-3 text-center text-sm font-semibold transition hover:border-fg/40"
+          className="btn mt-3 w-full"
         >
           Edit my profile
         </Link>
@@ -56,7 +56,7 @@ export default function RegisterForm({ discordName, discordAvatar }: { discordNa
       <Steps step={2} />
       <h2 className="font-display text-2xl font-bold">Your player profile</h2>
 
-      <div className="mt-5 flex items-center gap-3 rounded-lg border border-line bg-bg p-3">
+      <div className="slot mt-5 flex items-center gap-3 p-3">
         <Avatar source="discord" discordUrl={discordAvatar} size={32} />
         <div className="min-w-0 flex-1">
           <p className="text-[10px] text-muted">Logged in with Discord</p>
@@ -126,7 +126,7 @@ export default function RegisterForm({ discordName, discordAvatar }: { discordNa
         <button
           type="submit"
           disabled={pending}
-          className="btn-shine w-full rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-brand-ink disabled:opacity-60"
+          className="btn btn-brand w-full"
         >
           {pending ? "Creating…" : "Create my profile"}
         </button>
