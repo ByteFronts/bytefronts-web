@@ -56,3 +56,12 @@ export const BANNER_COLORS = [
   { value: "cyan", label: "Cyan", hex: "#4cc9e0" },
   { value: "purple", label: "Purple", hex: "#a66cf0" },
 ] as const;
+
+export const MAX_SERVERS_PER_OWNER = 5;
+
+export const SIZE_BUCKETS = [
+  { value: "<10", label: "Under 10" },
+  { value: "10-50", label: "10–50" },
+  { value: "50-200", label: "50–200" },
+  { value: "200+", label: "200+" },
+] as const;
