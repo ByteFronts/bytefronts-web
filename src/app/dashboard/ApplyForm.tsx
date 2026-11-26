@@ -17,6 +17,11 @@ export default function ApplyForm() {
   const [styles, setStyles] = useState<string[]>([]);
   const [playerBase, setPlayerBase] = useState("");
   const [community, setCommunity] = useState("");
+  const [name, setName] = useState("");
+  const [address, setAddress] = useState("");
+  const [other, setOther] = useState("");
+  const [since, setSince] = useState("");
+  const [invite, setInvite] = useState("");
   const [about, setAbout] = useState("");
   const [why, setWhy] = useState("");
   const today = new Date().toISOString().slice(0, 10);
@@ -42,6 +47,8 @@ export default function ApplyForm() {
         <Field label="Server name" htmlFor="server_name" error={fe.server_name?.[0]}>
           <input
             id="server_name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             name="server_name"
             maxLength={48}
             placeholder="e.g. Cozy Survival"
@@ -53,6 +60,8 @@ export default function ApplyForm() {
         <Field label="Server address" htmlFor="server_address" error={fe.server_address?.[0]}>
           <input
             id="server_address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
             name="server_address"
             placeholder="play.example.com"
             autoComplete="off"
@@ -84,7 +93,14 @@ export default function ApplyForm() {
         </Field>
 
         <Field label="Other play style" htmlFor="play_styles_other" hint="Optional" error={fe.play_styles_other?.[0]}>
-          <input id="play_styles_other" name="play_styles_other" maxLength={40} className={inputClass} />
+          <input
+            id="play_styles_other"
+            name="play_styles_other"
+            maxLength={40}
+            value={other}
+            onChange={(e) => setOther(e.target.value)}
+            className={inputClass}
+          />
         </Field>
 
         <Field label="Players on your server" error={fe.player_base_size?.[0]}>
@@ -98,6 +114,8 @@ export default function ApplyForm() {
         <Field label="Running since" htmlFor="running_since" error={fe.running_since?.[0]}>
           <input
             id="running_since"
+            value={since}
+            onChange={(e) => setSince(e.target.value)}
             name="running_since"
             type="date"
             max={today}
@@ -109,6 +127,8 @@ export default function ApplyForm() {
         <Field label="Discord invite" htmlFor="discord_link" error={fe.discord_link?.[0]}>
           <input
             id="discord_link"
+            value={invite}
+            onChange={(e) => setInvite(e.target.value)}
             name="discord_link"
             placeholder="https://discord.gg/..."
             autoComplete="off"
