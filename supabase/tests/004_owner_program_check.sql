@@ -390,6 +390,24 @@ begin
   assert ok, 'case 10: whitespace-only name rejected';
 end $$;
 
+-- 11. An owner can't delete a server an admin hid (re-adding it would undo the hide); admins can.
+do $$
+declare n int;
+begin
+  perform pg_temp.as_user('admin');
+  perform public.set_server_hidden(pg_temp.uid('b1'), true, 'spam');
+  perform pg_temp.as_user('b');
+  delete from public.servers where id = pg_temp.uid('b1');
+  get diagnostics n = row_count;
+  assert n = 0, 'case 11: owner cannot delete own hidden server';
+  reset role;
+  assert exists (select 1 from public.servers where id = pg_temp.uid('b1')), 'case 11: hidden server still exists';
+  perform pg_temp.as_user('admin');
+  delete from public.servers where id = pg_temp.uid('b1');
+  get diagnostics n = row_count;
+  assert n = 1, 'case 11: admin deletes hidden server';
+end $$;
+
 reset role;
 do $$ begin raise notice 'ALL OWNER PROGRAM CHECKS PASSED'; end $$;
 

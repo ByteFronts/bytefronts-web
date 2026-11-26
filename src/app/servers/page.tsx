@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { siteConfig, EDITIONS, PLAY_STYLES } from "@/lib/config";
 import { getServerStatus } from "@/lib/server-status";
 import CopyAddress from "@/components/CopyAddress";
@@ -70,7 +71,7 @@ async function ServerItem({ s }: { s: Row }) {
 async function ServerList() {
   let servers: Row[] = [];
   if (isSupabaseConfigured()) {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("servers")
       .select("id, name, address, edition, description, play_styles, discord_invite")

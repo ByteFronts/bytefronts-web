@@ -105,7 +105,11 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<{ erro
                     <Link href={`/dashboard/servers/${s.id}/edit`} className="text-sm text-brand hover:underline">
                       Edit
                     </Link>
-                    <DeleteServerButton id={s.id} />
+                    {s.is_hidden ? (
+                      <p className="text-xs text-muted">Hidden by admin — contact us on Discord to resolve it.</p>
+                    ) : (
+                      <DeleteServerButton id={s.id} />
+                    )}
                   </>
                 )}
               </li>

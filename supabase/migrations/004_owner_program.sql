@@ -1,3 +1,4 @@
+-- DO NOT RE-RUN AFTER LAUNCH: this drops and recreates public.servers and deletes every listed server.
 -- Run this once in the Supabase SQL editor (Dashboard -> SQL Editor).
 -- Server Owner Program: roles, owner applications, servers, audit log, announcements.
 --
@@ -5,10 +6,9 @@
 -- recreated without the old status / consent columns).
 --
 -- After running it, make yourself admin:
---   insert into public.user_roles (user_id, role) values ('<your auth uid>', 'admin');
+--   insert into public.user_roles (user_id, role, discord_username) values ('<your auth uid>', 'admin', '<your discord name>');
 --
--- Everything below the drop is re-runnable (create ... if not exists, drop policy if exists,
--- create or replace function).
+-- Safe to re-run only on a database with no real servers (e.g. while testing).
 
 drop table if exists public.servers cascade;
 
@@ -193,7 +193,8 @@ create policy "update own server" on public.servers
 drop policy if exists "delete own server or admin" on public.servers;
 create policy "delete own server or admin" on public.servers
   for delete to authenticated
-  using ((owner_id = auth.uid() and public.is_active_owner()) or public.is_admin());
+  -- not is_hidden: deleting and re-adding the address would undo an admin hide.
+  using ((owner_id = auth.uid() and public.is_active_owner() and not is_hidden) or public.is_admin());
 
 -- owner_applications
 drop policy if exists "read own application or admin" on public.owner_applications;

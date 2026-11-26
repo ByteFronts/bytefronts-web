@@ -22,7 +22,15 @@ async function Log() {
 
   if (!rows?.length) return <p className="slot px-6 py-10 text-muted">No audit entries.</p>;
 
-  const ids = [...new Set(rows.map((r) => r.actor_id).filter((x): x is string => !!x))];
+  // owner_suspend / owner_reinstate rows carry the target user id in new_value.
+  const isOwnerRow = (a: string) => a === "owner_suspend" || a === "owner_reinstate";
+  const ids = [
+    ...new Set(
+      rows
+        .flatMap((r) => [r.actor_id, isOwnerRow(r.action) ? r.new_value : null])
+        .filter((x): x is string => !!x),
+    ),
+  ];
   const { data: roles } = ids.length
     ? await supabase.from("user_roles").select("user_id, discord_username").in("user_id", ids)
     : { data: [] };
@@ -48,7 +56,9 @@ async function Log() {
                 {new Date(r.created_at).toLocaleString("en-GB")} · {r.server_name ?? "–"} ·{" "}
                 {r.actor_id ? (names.get(r.actor_id) ?? r.actor_id.slice(0, 8)) : "system"}
               </p>
-              {r.field && (
+              {isOwnerRow(r.action) && r.new_value ? (
+                <p className="mt-1 break-words">Owner: {names.get(r.new_value) ?? r.new_value.slice(0, 8)}</p>
+              ) : r.field && (
                 <p className="mt-1 break-words">
                   {r.field}: {r.old_value ?? "–"} → {r.new_value ?? "–"}
                 </p>

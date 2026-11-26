@@ -27,9 +27,10 @@ async function List({ searchParams }: { searchParams: PageProps<"/admin/servers"
 
   const ownerIds = [...new Set((servers ?? []).map((s) => s.owner_id))];
   const { data: roles } = ownerIds.length
-    ? await supabase.from("user_roles").select("user_id, discord_username").in("user_id", ownerIds)
+    ? await supabase.from("user_roles").select("user_id, discord_username, owner_status").in("user_id", ownerIds)
     : { data: [] };
   const names = new Map((roles ?? []).map((r) => [r.user_id, r.discord_username]));
+  const suspended = new Set((roles ?? []).filter((r) => r.owner_status === "suspended").map((r) => r.user_id));
 
   return (
     <>
@@ -45,7 +46,10 @@ async function List({ searchParams }: { searchParams: PageProps<"/admin/servers"
             <li key={s.id} className="panel space-y-3 p-5 pb-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="truncate font-display text-lg font-bold">{s.name}</h2>
-                {s.is_hidden && <span className="chip px-3 py-1 text-xs">Hidden</span>}
+                <div className="flex gap-2">
+                  {suspended.has(s.owner_id) && <span className="chip px-3 py-1 text-xs">Owner suspended</span>}
+                  {s.is_hidden && <span className="chip px-3 py-1 text-xs">Hidden</span>}
+                </div>
               </div>
               <p className="text-sm text-muted">
                 {s.address} · {names.get(s.owner_id) ?? s.owner_id.slice(0, 8)}
