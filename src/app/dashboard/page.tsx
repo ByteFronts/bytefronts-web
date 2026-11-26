@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
-import { siteConfig } from "@/lib/config";
+import { MAX_SERVERS_PER_OWNER, siteConfig } from "@/lib/config";
 import { getViewer } from "@/lib/roles";
 import RegisterShell from "@/app/register/RegisterShell";
 import { signInWithDiscord } from "@/app/register/actions";
+import DeleteServerButton from "./DeleteServerButton";
 
 export const metadata: Metadata = { title: `Dashboard · ${siteConfig.name}` };
 
@@ -54,22 +55,80 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<{ erro
     );
   }
 
-  if (viewer.role !== "player") {
-    // Placeholder: Task 7 replaces this with the owner's server list.
+  const supabase = await createClient();
+
+  if (viewer.role === "admin") {
     return (
       <div className={card}>
-        <h2 className="font-display text-2xl font-bold">Your servers</h2>
-        <p className="mt-3 text-sm text-muted">Your servers will show up here soon.</p>
-        {viewer.role === "admin" && (
-          <Link href="/admin" className="btn mt-6 w-full">
-            Admin
-          </Link>
-        )}
+        <h2 className="font-display text-2xl font-bold">Server dashboard</h2>
+        <p className="mt-3 text-sm text-muted">You&apos;re an admin. Review applications and servers from the admin area.</p>
+        <Link href="/admin" className="btn mt-6 w-full">
+          Admin
+        </Link>
       </div>
     );
   }
 
-  const supabase = await createClient();
+  if (viewer.role === "owner") {
+    const suspended = viewer.ownerStatus === "suspended";
+    const { data } = await supabase
+      .from("servers")
+      .select("id, name, address, is_hidden, hidden_reason")
+      .eq("owner_id", viewer.user.id)
+      .order("created_at", { ascending: true });
+    const servers = data ?? [];
+    const atCap = servers.length >= MAX_SERVERS_PER_OWNER;
+
+    return (
+      <div className={card}>
+        <h2 className="font-display text-2xl font-bold">Your servers</h2>
+        {suspended && (
+          <p className="notch mt-4 bg-amber-400/10 px-3 py-2 text-sm text-amber-200">
+            Your owner account is suspended. Your servers are hidden and can&apos;t be changed.
+          </p>
+        )}
+        {servers.length === 0 ? (
+          <p className="mt-3 text-sm text-muted">You haven&apos;t listed a server yet.</p>
+        ) : (
+          <ul className="mt-5 space-y-3">
+            {servers.map((s) => (
+              <li key={s.id} className="slot flex flex-wrap items-center gap-3 p-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{s.name}</p>
+                  <p className="truncate text-xs text-muted">{s.address}</p>
+                  {s.is_hidden && (
+                    <p className="mt-1 text-xs text-amber-200">Hidden by admin: {s.hidden_reason}</p>
+                  )}
+                </div>
+                {!suspended && (
+                  <>
+                    <Link href={`/dashboard/servers/${s.id}/edit`} className="text-sm text-brand hover:underline">
+                      Edit
+                    </Link>
+                    <DeleteServerButton id={s.id} />
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+        {!suspended &&
+          (atCap ? (
+            <>
+              <button type="button" disabled className="btn btn-brand mt-6 w-full">
+                Add server
+              </button>
+              <p className="mt-2 text-center text-xs text-muted">You can list up to {MAX_SERVERS_PER_OWNER} servers.</p>
+            </>
+          ) : (
+            <Link href="/dashboard/servers/new" className="btn btn-brand mt-6 w-full">
+              Add server
+            </Link>
+          ))}
+      </div>
+    );
+  }
+
   const { data: application } = await supabase
     .from("owner_applications")
     .select("status, reject_reason")
