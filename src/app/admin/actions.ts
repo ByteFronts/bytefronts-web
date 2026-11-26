@@ -16,6 +16,9 @@ async function call(name: string, args: Record<string, unknown>): Promise<FormSt
   if (error) {
     if (error.message === "not_pending") return { error: "This application was already reviewed." };
     if (error.message === "reason_required") return { fieldErrors: { reason: ["Enter a reason"] } };
+    // unique_violation on user_roles: the applicant already has a role (e.g. they are an admin).
+    if (error.code === "23505") return { error: "This player already has a role (owner or admin), so they can't be approved again." };
+    console.error(`[admin] ${name} failed:`, error.code, error.message);
     return { error: GENERIC };
   }
   revalidatePath("/admin", "layout");

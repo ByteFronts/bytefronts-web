@@ -178,7 +178,7 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<{ erro
 
 export default function DashboardPage(props: PageProps<"/dashboard">) {
   return (
-    <RegisterShell copy={dashboardCopy}>
+    <RegisterShell copy={dashboardCopy} backToMineFriend>
       <Suspense fallback={<p className="text-center text-muted">Loading…</p>}>
         <DashboardContent searchParams={props.searchParams} />
       </Suspense>
