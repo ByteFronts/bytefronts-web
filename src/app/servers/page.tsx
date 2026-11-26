@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { siteConfig, EDITIONS, PLAY_STYLES } from "@/lib/config";
 import { getServerStatus } from "@/lib/server-status";
 import CopyAddress from "@/components/CopyAddress";
@@ -27,7 +28,7 @@ async function ServerItem({ s }: { s: Row }) {
   const status = await getServerStatus(s.address);
   const light = !status ? "bg-line" : status.online ? "bg-brand" : "bg-red-400";
   return (
-    <li className="panel grid gap-x-6 gap-y-4 p-5 pb-6 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
+    <li id={s.id} className="panel scroll-mt-24 grid gap-x-6 gap-y-4 p-5 pb-6 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
       <span aria-hidden className={`notch hidden h-12 w-12 sm:block ${light}`} />
       <div className="min-w-0">
         <h2 className="truncate font-display text-lg font-bold">{s.name}</h2>
@@ -70,11 +71,10 @@ async function ServerItem({ s }: { s: Row }) {
 async function ServerList() {
   let servers: Row[] = [];
   if (isSupabaseConfigured()) {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("servers")
       .select("id, name, address, edition, description, play_styles, discord_invite")
-      .eq("status", "approved")
       .order("created_at", { ascending: false })
       .limit(50);
     servers = data ?? [];
@@ -84,7 +84,7 @@ async function ServerList() {
     return (
       <div className="slot px-6 py-10">
         <p className="font-display text-lg font-semibold">No servers listed yet</p>
-        <p className="mt-1 text-sm text-muted">Register yours and it shows up here once it&apos;s approved.</p>
+        <p className="mt-1 text-sm text-muted">Server owners can list theirs from the dashboard.</p>
       </div>
     );
   }
@@ -108,11 +108,11 @@ export default function ServersPage() {
               Servers
             </h1>
             <p className="mt-4 max-w-md text-muted">
-              Community Minecraft servers, reviewed before they&apos;re listed. Click an address to copy it.
+              Community Minecraft servers from approved owners. Click an address to copy it.
             </p>
           </div>
-          <Link href="/servers/register" className="btn btn-brand">
-            Register your server
+          <Link href="/dashboard" className="btn btn-brand">
+            List your server
           </Link>
         </div>
         <Suspense fallback={<p className="slot px-6 py-10 text-muted">Loading servers…</p>}>

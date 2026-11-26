@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Logo from "@/components/Logo";
 import PixelScene from "@/components/PixelScene";
 
@@ -35,9 +36,11 @@ const playerCopy = {
 export default function RegisterShell({
   children,
   copy = playerCopy,
+  backToMineFriend = false,
 }: {
   children: React.ReactNode;
   copy?: typeof playerCopy;
+  backToMineFriend?: boolean;
 }) {
   return (
     <main className="grid flex-1 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
@@ -67,7 +70,14 @@ export default function RegisterShell({
       </aside>
 
       <section className="flex items-center justify-center px-5 py-12 md:px-10">
-        <div className="w-full max-w-md">{children}</div>
+        <div className="w-full max-w-md">
+          {backToMineFriend && (
+            <Link href="/minefriend" className="btn mb-4 w-fit text-sm">
+              ← Back to MineFriend
+            </Link>
+          )}
+          {children}
+        </div>
       </section>
     </main>
   );

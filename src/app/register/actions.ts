@@ -22,7 +22,7 @@ export type FormState = {
   fieldErrors?: Record<string, string[] | undefined>;
 };
 
-const LOGIN_RETURN_PATHS = ["/register", "/servers/register"];
+const LOGIN_RETURN_PATHS = ["/register", "/dashboard"];
 
 export async function signInWithDiscord(formData?: FormData) {
   const requested = formData?.get("next");

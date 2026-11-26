@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import Link from "next/link";
 import { saveProfile, signOut, type FormState } from "@/app/register/actions";
 import Avatar from "@/components/Avatar";
 import Confetti from "@/components/Confetti";
@@ -367,6 +368,9 @@ export default function ProfileEditor({
           <h2 className={cardTitle}>Account</h2>
           <p className={cardSub}>Signed in with Discord. Matching happens in {siteConfig.name}&apos;s Discord server.</p>
           <div className="mt-6 flex flex-wrap items-center gap-4">
+            <Link href="/dashboard" className="btn">
+              Server dashboard
+            </Link>
             <form action={signOut}>
               <button className="btn">
                 Log out

@@ -80,7 +80,7 @@ async function RegisterContent({ searchParams }: { searchParams: Promise<{ error
 
 export default function RegisterPage(props: PageProps<"/register">) {
   return (
-    <RegisterShell>
+    <RegisterShell backToMineFriend>
       <Suspense fallback={<p className="text-center text-muted">Loading…</p>}>
         <RegisterContent searchParams={props.searchParams} />
       </Suspense>
