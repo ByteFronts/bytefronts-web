@@ -34,12 +34,12 @@ create table if not exists public.owner_applications (
   reviewed_by       uuid references auth.users(id) on delete set null,
   reviewed_at       timestamptz,
   created_at        timestamptz not null default now(),
-  server_name       text not null check (char_length(server_name) between 1 and 48),
+  server_name       text not null check (char_length(btrim(server_name)) >= 1 and char_length(server_name) <= 48),
   server_address    text not null check (server_address = lower(server_address)
     and char_length(server_address) <= 260
     and server_address ~ '^[a-z0-9]([a-z0-9.-]*[a-z0-9])?(:[0-9]{1,5})?$'),
   edition           text not null check (edition in ('java', 'bedrock', 'both')),
-  server_about      text not null check (char_length(server_about) between 1 and 500),
+  server_about      text not null check (char_length(btrim(server_about)) >= 1 and char_length(server_about) <= 500),
   play_styles       text[] not null check (cardinality(play_styles) between 1 and 8
     and play_styles <@ array['survival','creative','redstone','pvp','minigames','roleplay','building','adventure']),
   play_styles_other text check (play_styles_other is null or char_length(play_styles_other) <= 40),
@@ -47,7 +47,7 @@ create table if not exists public.owner_applications (
   community_size    text not null check (community_size in ('<10', '10-50', '50-200', '200+')),
   running_since     date not null check (running_since <= current_date),
   discord_link      text not null check (discord_link ~ '^https://(discord\.gg|discord\.com/invite)/[A-Za-z0-9_-]+$'),
-  why_join          text not null check (char_length(why_join) between 1 and 500)
+  why_join          text not null check (char_length(btrim(why_join)) >= 1 and char_length(why_join) <= 500)
 );
 
 create unique index if not exists owner_applications_one_pending
@@ -57,7 +57,7 @@ create unique index if not exists owner_applications_one_pending
 create table public.servers (
   id             uuid primary key default gen_random_uuid(),
   owner_id       uuid not null default auth.uid() references auth.users(id) on delete cascade,
-  name           text not null check (char_length(name) between 1 and 48),
+  name           text not null check (char_length(btrim(name)) >= 1 and char_length(name) <= 48),
   address        text not null unique check (address = lower(address)),
   edition        text not null check (edition in ('java', 'bedrock', 'both')),
   description    text check (description is null or char_length(description) <= 200),

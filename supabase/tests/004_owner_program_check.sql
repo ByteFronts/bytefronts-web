@@ -8,7 +8,8 @@ begin;
 select set_config('t.admin', gen_random_uuid()::text, true),
        set_config('t.a', gen_random_uuid()::text, true),
        set_config('t.b', gen_random_uuid()::text, true),
-       set_config('t.p', gen_random_uuid()::text, true);
+       set_config('t.p', gen_random_uuid()::text, true),
+       set_config('t.r', gen_random_uuid()::text, true);
 
 create function pg_temp.uid(name text) returns uuid language sql as $$
   select current_setting('t.' || name)::uuid
@@ -35,11 +36,11 @@ grant execute on function pg_temp.uid(text), pg_temp.as_user(text), pg_temp.as_a
 
 -- Seed: admin, owners A and B, player P, each with a Discord identity.
 insert into auth.users (id, email, raw_user_meta_data)
-select pg_temp.uid(n), n || '@check.invalid', '{}'::jsonb from unnest(array['admin', 'a', 'b', 'p']) n;
+select pg_temp.uid(n), n || '@check.invalid', '{}'::jsonb from unnest(array['admin', 'a', 'b', 'p', 'r']) n;
 
 insert into auth.identities (user_id, provider_id, provider, identity_data)
 select pg_temp.uid(n), 'discord-' || n, 'discord', jsonb_build_object('full_name', 'Name ' || n)
-from unnest(array['admin', 'a', 'b', 'p']) n;
+from unnest(array['admin', 'a', 'b', 'p', 'r']) n;
 
 insert into public.user_roles (user_id, role) values (pg_temp.uid('admin'), 'admin');
 insert into public.user_roles (user_id, role, owner_status, discord_id, discord_username)
@@ -265,15 +266,15 @@ begin
   begin perform public.mark_audit_reviewed(array[gen_random_uuid()]); exception when others then msg := sqlerrm; end;
   assert msg = 'forbidden', 'case 9: mark_audit_reviewed';
 
-  perform pg_temp.as_user('p');
+  perform pg_temp.as_user('r');
   select count(*) into n from public.audit_log;
-  assert n = 0, 'case 9: player reads no audit rows';
+  assert n = 0, 'case 9: no-role user reads no audit rows';
 
   -- Admin: hide (reason required) / unhide, reject, not_owner, mark reviewed.
   perform pg_temp.as_user('admin');
   msg := null;
   begin perform public.set_server_hidden(pg_temp.uid('b1'), true, null); exception when others then msg := sqlerrm; end;
-  assert msg is not null, 'case 9: hiding needs a reason';
+  assert msg = 'reason_required', 'case 9: hiding needs a reason, got ' || coalesce(msg, 'no error');
   perform public.set_server_hidden(pg_temp.uid('b1'), true, 'spam');
   assert (select is_hidden and hidden_reason = 'spam' from public.servers where id = pg_temp.uid('b1')),
     'case 9: hidden with reason';
@@ -337,6 +338,56 @@ begin
   exception when others then msg := sqlerrm;
   end;
   assert msg = 'no_discord_identity', 'case 9: no identity -> no_discord_identity, got ' || coalesce(msg, 'no error');
+end $$;
+
+-- 10. Direct writes that would bypass the RPCs/triggers are denied (anti-goal guard),
+--     and whitespace-only required text is rejected.
+do $$
+declare ok boolean;
+begin
+  perform pg_temp.as_user('r');
+  ok := false;
+  begin
+    insert into public.user_roles (user_id, role) values (pg_temp.uid('r'), 'admin');
+  exception when insufficient_privilege then ok := true;
+  end;
+  assert ok, 'case 10: no-role user cannot insert user_roles';
+  ok := false;
+  begin
+    insert into public.audit_log (action) values ('server_create');
+  exception when insufficient_privilege then ok := true;
+  end;
+  assert ok, 'case 10: user cannot insert audit_log';
+  ok := false;
+  begin
+    insert into public.owner_applications (status, server_name, server_address, edition, server_about,
+      play_styles, player_base_size, community_size, running_since, discord_link, why_join)
+    values ('approved', 'R', 'play.r.net', 'java', 'about', array['pvp'], '<10', '<10',
+      date '2023-05-01', 'https://discord.gg/r', 'why');
+  exception when insufficient_privilege then ok := true;
+  end;
+  assert ok, 'case 10: user cannot insert an approved application';
+
+  perform pg_temp.as_user('a');
+  ok := false;
+  begin
+    update public.user_roles set owner_status = 'active' where user_id = pg_temp.uid('a');
+  exception when insufficient_privilege then ok := true;
+  end;
+  assert ok, 'case 10: owner cannot update own owner_status';
+  ok := false;
+  begin
+    update public.servers set hidden_reason = 'x' where id = pg_temp.uid('a1');
+  exception when insufficient_privilege then ok := true;
+  end;
+  assert ok, 'case 10: owner cannot set hidden_reason';
+  ok := false;
+  begin
+    insert into public.servers (name, address, edition, play_styles)
+    values ('   ', 'blank.example.net', 'java', array['survival']);
+  exception when check_violation then ok := true;
+  end;
+  assert ok, 'case 10: whitespace-only name rejected';
 end $$;
 
 reset role;
