@@ -34,12 +34,12 @@ create table if not exists public.owner_applications (
   reviewed_by       uuid references auth.users(id) on delete set null,
   reviewed_at       timestamptz,
   created_at        timestamptz not null default now(),
-  server_name       text not null check (char_length(server_name) <= 48),
+  server_name       text not null check (char_length(server_name) between 1 and 48),
   server_address    text not null check (server_address = lower(server_address)
     and char_length(server_address) <= 260
     and server_address ~ '^[a-z0-9]([a-z0-9.-]*[a-z0-9])?(:[0-9]{1,5})?$'),
   edition           text not null check (edition in ('java', 'bedrock', 'both')),
-  server_about      text not null check (char_length(server_about) <= 500),
+  server_about      text not null check (char_length(server_about) between 1 and 500),
   play_styles       text[] not null check (cardinality(play_styles) between 1 and 8
     and play_styles <@ array['survival','creative','redstone','pvp','minigames','roleplay','building','adventure']),
   play_styles_other text check (play_styles_other is null or char_length(play_styles_other) <= 40),
@@ -47,7 +47,7 @@ create table if not exists public.owner_applications (
   community_size    text not null check (community_size in ('<10', '10-50', '50-200', '200+')),
   running_since     date not null check (running_since <= current_date),
   discord_link      text not null check (discord_link ~ '^https://(discord\.gg|discord\.com/invite)/[A-Za-z0-9_-]+$'),
-  why_join          text not null check (char_length(why_join) <= 500)
+  why_join          text not null check (char_length(why_join) between 1 and 500)
 );
 
 create unique index if not exists owner_applications_one_pending
@@ -57,11 +57,11 @@ create unique index if not exists owner_applications_one_pending
 create table public.servers (
   id             uuid primary key default gen_random_uuid(),
   owner_id       uuid not null default auth.uid() references auth.users(id) on delete cascade,
-  name           text not null check (char_length(name) <= 48),
+  name           text not null check (char_length(name) between 1 and 48),
   address        text not null unique check (address = lower(address)),
   edition        text not null check (edition in ('java', 'bedrock', 'both')),
   description    text check (description is null or char_length(description) <= 200),
-  play_styles    text[] not null default '{}',
+  play_styles    text[] not null,
   discord_invite text,
   is_hidden      boolean not null default false,
   hidden_reason  text check (hidden_reason is null or char_length(hidden_reason) between 1 and 200),
@@ -105,6 +105,11 @@ create table if not exists public.announced_addresses (
 );
 
 -- Added here, not inline: dropping servers (cascade) on a re-run removes these FKs.
+-- On a re-run the old server ids no longer exist; clear them so the FKs can be re-added.
+update public.audit_log a set server_id = null
+  where a.server_id is not null and not exists (select 1 from public.servers s where s.id = a.server_id);
+update public.announced_addresses a set server_id = null
+  where a.server_id is not null and not exists (select 1 from public.servers s where s.id = a.server_id);
 alter table public.audit_log drop constraint if exists audit_log_server_id_fkey;
 alter table public.audit_log add constraint audit_log_server_id_fkey
   foreign key (server_id) references public.servers(id) on delete set null;
@@ -213,3 +218,231 @@ drop policy if exists "admin reads audit log" on public.audit_log;
 create policy "admin reads audit log" on public.audit_log
   for select to authenticated
   using (public.is_admin());
+
+-- ---------------------------------------------------------------- triggers
+-- All security definer: they write audit_log / read auth.identities, which callers can't.
+-- auth.uid() still reads the caller's JWT, so actor_id is the real user (or admin via an RPC).
+
+-- Discord ID/name come from the login identity, never from the form (same name order as
+-- getDiscordIdentity in the app).
+create or replace function public.owner_applications_set_identity() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  new.user_id := auth.uid();
+  select i.provider_id,
+         coalesce(nullif(i.identity_data->'custom_claims'->>'global_name', ''),
+                  nullif(i.identity_data->>'full_name', ''),
+                  nullif(i.identity_data->>'name', ''),
+                  nullif(i.identity_data->>'user_name', ''),
+                  nullif(i.identity_data->>'preferred_username', ''),
+                  i.provider_id)
+    into new.discord_id, new.discord_username
+    from auth.identities i
+    where i.user_id = new.user_id and i.provider = 'discord'
+    limit 1;
+  if new.discord_id is null then
+    raise exception 'no_discord_identity';
+  end if;
+  return new;
+end $$;
+
+create or replace trigger owner_applications_set_identity
+  before insert on public.owner_applications
+  for each row execute function public.owner_applications_set_identity();
+
+alter table public.owner_applications alter column discord_id set not null;
+alter table public.owner_applications alter column discord_username set not null;
+
+create or replace function public.owner_applications_audit() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  if new.status in ('approved', 'rejected') then
+    insert into public.audit_log (server_name, actor_id, action, new_value)
+    values (new.server_name, auth.uid(),
+      case new.status when 'approved' then 'application_approve' else 'application_reject' end,
+      new.reject_reason);
+  end if;
+  return null;
+end $$;
+
+create or replace trigger owner_applications_audit
+  after update of status on public.owner_applications
+  for each row when (old.status is distinct from new.status)
+  execute function public.owner_applications_audit();
+
+create or replace function public.user_roles_audit() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  insert into public.audit_log (actor_id, action, field, new_value)
+  values (auth.uid(),
+    case new.owner_status when 'suspended' then 'owner_suspend' else 'owner_reinstate' end,
+    'user_id', new.user_id::text);
+  return null;
+end $$;
+
+create or replace trigger user_roles_audit
+  after update of owner_status on public.user_roles
+  for each row when (old.owner_status is distinct from new.owner_status and new.owner_status is not null)
+  execute function public.user_roles_audit();
+
+-- Server cap. The advisory lock serialises concurrent inserts by the same owner.
+create or replace function public.servers_enforce_cap() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  perform pg_advisory_xact_lock(hashtext(new.owner_id::text));
+  if (select count(*) from public.servers s where s.owner_id = new.owner_id) >= 5 then  -- MAX_SERVERS_PER_OWNER
+    raise exception 'server_limit';
+  end if;
+  return new;
+end $$;
+
+create trigger servers_enforce_cap
+  before insert on public.servers
+  for each row execute function public.servers_enforce_cap();
+
+create or replace function public.servers_touch() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+
+create trigger servers_touch
+  before update on public.servers
+  for each row execute function public.servers_touch();
+
+create or replace function public.servers_audit() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  if tg_op = 'INSERT' then
+    insert into public.audit_log (server_id, server_name, actor_id, action, new_value)
+    values (new.id, new.name, auth.uid(), 'server_create', new.address);
+  elsif tg_op = 'DELETE' then
+    -- server_id stays null: the row is gone, so the FK can't point at it.
+    insert into public.audit_log (server_name, actor_id, action, old_value)
+    values (old.name, auth.uid(), 'server_delete', old.address);
+  else
+    if old.is_hidden is distinct from new.is_hidden then
+      insert into public.audit_log (server_id, server_name, actor_id, action, new_value)
+      values (new.id, new.name, auth.uid(),
+        case when new.is_hidden then 'server_hide' else 'server_unhide' end, new.hidden_reason);
+    end if;
+    insert into public.audit_log (server_id, server_name, actor_id, action, field, old_value, new_value, is_flagged)
+    select new.id, new.name, auth.uid(), 'server_update', c.field, c.old_value, c.new_value, c.field = 'address'
+    from (values
+      ('name', old.name, new.name),
+      ('address', old.address, new.address),
+      ('edition', old.edition, new.edition),
+      ('description', old.description, new.description),
+      ('play_styles', old.play_styles::text, new.play_styles::text),
+      ('discord_invite', old.discord_invite, new.discord_invite)
+    ) c(field, old_value, new_value)
+    where c.old_value is distinct from c.new_value;
+  end if;
+  return null;
+end $$;
+
+create trigger servers_audit
+  after insert or update or delete on public.servers
+  for each row execute function public.servers_audit();
+
+revoke execute on function public.owner_applications_set_identity(), public.owner_applications_audit(),
+  public.user_roles_audit(), public.servers_enforce_cap(), public.servers_touch(), public.servers_audit()
+  from public, anon, authenticated;
+
+-- ---------------------------------------------------------------- RPCs
+-- Admin writes go through these (column grants block admins too). Errors the app maps:
+-- 'forbidden', 'not_pending', 'server_limit' (cap trigger).
+
+create or replace function public.approve_application(app_id uuid) returns void
+language plpgsql security definer set search_path = '' as $$
+declare app public.owner_applications;
+begin
+  if not public.is_admin() then raise exception 'forbidden'; end if;
+  select * into app from public.owner_applications a where a.id = app_id for update;
+  if not found then raise exception 'not_found'; end if;
+  if app.status <> 'pending' then raise exception 'not_pending'; end if;
+  update public.owner_applications a
+    set status = 'approved', reviewed_by = auth.uid(), reviewed_at = now()
+    where a.id = app_id;
+  insert into public.user_roles (user_id, role, owner_status, discord_id, discord_username)
+    values (app.user_id, 'owner', 'active', app.discord_id, app.discord_username);
+end $$;
+
+create or replace function public.reject_application(app_id uuid, reason text) returns void
+language plpgsql security definer set search_path = '' as $$
+declare app_status text;
+begin
+  if not public.is_admin() then raise exception 'forbidden'; end if;
+  if coalesce(char_length(btrim(reason)), 0) = 0 then raise exception 'reason_required'; end if;
+  select a.status into app_status from public.owner_applications a where a.id = app_id for update;
+  if not found then raise exception 'not_found'; end if;
+  if app_status <> 'pending' then raise exception 'not_pending'; end if;
+  update public.owner_applications a  -- check constraint enforces reason <= 200
+    set status = 'rejected', reject_reason = btrim(reason), reviewed_by = auth.uid(), reviewed_at = now()
+    where a.id = app_id;
+end $$;
+
+create or replace function public.set_server_hidden(server_id uuid, hidden boolean, reason text) returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  if not public.is_admin() then raise exception 'forbidden'; end if;
+  if hidden and coalesce(char_length(btrim(reason)), 0) = 0 then raise exception 'reason_required'; end if;
+  update public.servers s  -- check constraint enforces reason <= 200
+    set is_hidden = hidden, hidden_reason = case when hidden then btrim(reason) end
+    where s.id = set_server_hidden.server_id;
+  if not found then raise exception 'not_found'; end if;
+end $$;
+
+create or replace function public.set_owner_status(target uuid, status text) returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  if not public.is_admin() then raise exception 'forbidden'; end if;
+  if status not in ('active', 'suspended') then raise exception 'invalid_status'; end if;
+  update public.user_roles r
+    set owner_status = set_owner_status.status, updated_at = now()
+    where r.user_id = target and r.role = 'owner';
+  if not found then raise exception 'not_owner'; end if;
+end $$;
+
+create or replace function public.mark_audit_reviewed(ids uuid[]) returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  if not public.is_admin() then raise exception 'forbidden'; end if;
+  update public.audit_log a set reviewed = true where a.id = any(ids);
+end $$;
+
+-- True only the first time an address is announced (claimed before posting, so a
+-- double submit can't post twice; deleting and re-adding the address doesn't re-post).
+create or replace function public.claim_announcement(p_server_id uuid) returns boolean
+language plpgsql security definer set search_path = '' as $$
+declare addr text;
+begin
+  select s.address into addr from public.servers s where s.id = p_server_id and s.owner_id = auth.uid();
+  if not found then raise exception 'forbidden'; end if;
+  insert into public.announced_addresses (address, server_id) values (addr, p_server_id)
+    on conflict (address) do nothing;
+  return found;
+end $$;
+
+create or replace function public.record_announcement_error(p_server_id uuid, error text) returns void
+language plpgsql security definer set search_path = '' as $$
+declare srv public.servers;
+begin
+  select * into srv from public.servers s where s.id = p_server_id and s.owner_id = auth.uid();
+  if not found then raise exception 'forbidden'; end if;
+  update public.announced_addresses a set last_error = left(error, 500) where a.address = srv.address;
+  insert into public.audit_log (server_id, server_name, actor_id, action, new_value)
+    values (srv.id, srv.name, auth.uid(), 'announce_failed', left(error, 500));
+end $$;
+
+revoke execute on function public.approve_application(uuid), public.reject_application(uuid, text),
+  public.set_server_hidden(uuid, boolean, text), public.set_owner_status(uuid, text),
+  public.mark_audit_reviewed(uuid[]), public.claim_announcement(uuid),
+  public.record_announcement_error(uuid, text)
+  from public, anon;
+grant execute on function public.approve_application(uuid), public.reject_application(uuid, text),
+  public.set_server_hidden(uuid, boolean, text), public.set_owner_status(uuid, text),
+  public.mark_audit_reviewed(uuid[]), public.claim_announcement(uuid),
+  public.record_announcement_error(uuid, text)
+  to authenticated;
