@@ -43,9 +43,11 @@ export async function rejectApplication(_prev: FormState, fd: FormData): Promise
 
 export async function setServerHidden(_prev: FormState, fd: FormData): Promise<FormState> {
   await requireAdmin();
+  const hidden = str(fd, "hidden") === "true";
+  if (!hidden) return call("set_server_hidden", { server_id: str(fd, "id"), hidden, reason: null });
   const r = reason(fd);
   if (!("value" in r)) return r.state;
-  return call("set_server_hidden", { server_id: str(fd, "id"), hidden: str(fd, "hidden") === "true", reason: r.value });
+  return call("set_server_hidden", { server_id: str(fd, "id"), hidden, reason: r.value });
 }
 
 export async function setOwnerStatus(_prev: FormState, fd: FormData): Promise<FormState> {
