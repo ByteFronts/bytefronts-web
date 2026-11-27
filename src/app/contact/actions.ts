@@ -36,19 +36,26 @@ export async function sendContact(_prev: FormState, fd: FormData): Promise<FormS
     return { error: SEND_FAILED };
   }
 
+  const resend = new Resend(key);
+  const from = `ByteFronts <no-reply@${domain}>`;
   const { subject, text } = buildContactEmail(parsed.data);
-  const { error } = await new Resend(key).emails.send({
-    from: `ByteFronts Website <no-reply@${domain}>`,
-    to: CONTACT_EMAIL,
-    replyTo: parsed.data.email,
-    subject,
-    text,
-  });
+  const { error } = await resend.emails.send({ from, to: CONTACT_EMAIL, replyTo: parsed.data.email, subject, text });
   if (error) {
     console.error("[contact] send failed:", error.name, error.message);
     return { error: SEND_FAILED };
   }
-
   recent.set(ip, [...hits, now]);
+
+  // Auto-reply to the sender. Fixed text only: echoing their input would let anyone use the form
+  // to send arbitrary content to any address. A failure here doesn't undo the delivered message.
+  const ack = await resend.emails.send({
+    from,
+    to: parsed.data.email,
+    replyTo: CONTACT_EMAIL,
+    subject: "We got your message",
+    text: `Hi,\n\nThanks for contacting ByteFronts. We received your message and will reply within a few days.\n\nIf you didn't send this, you can ignore this email.\n\nByteFronts\n${CONTACT_EMAIL}`,
+  });
+  if (ack.error) console.error("[contact] auto-reply failed:", ack.error.name, ack.error.message);
+
   return { ok: true };
 }
