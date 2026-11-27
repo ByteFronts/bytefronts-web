@@ -1,12 +1,9 @@
 import Link from "next/link";
 import AsciiField from "@/components/AsciiField";
-import CopyEmail from "@/components/CopyEmail";
 import MatchCard from "@/components/MatchCard";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import Spotlight from "@/components/Spotlight";
 import { siteConfig } from "@/lib/config";
-
-const email = "contact@bytefronts.com";
 
 const team = [
   { name: "sw1ft_z", role: "Founder & Developer", bio: "Don't be afraid to make a difference." },
@@ -112,10 +109,10 @@ export default function Home() {
           <div className="mx-auto w-full max-w-6xl px-6">
             <h2 className={h2}>Get in touch</h2>
             <p className="mt-4 max-w-md leading-relaxed text-muted">
-              Questions, partnerships or feedback? Copy our email, or reach the team on Discord.
+              Questions, partnerships or feedback? Send us a message, or reach the team on Discord.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <CopyEmail email={email} className={btnPrimary} />
+              <Link href="/contact" className={btnPrimary}>Send us a message</Link>
               <a href={siteConfig.discordInvite} className={btnOutline}>Join our Discord</a>
             </div>
           </div>
