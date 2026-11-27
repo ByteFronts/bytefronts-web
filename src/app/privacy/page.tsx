@@ -19,6 +19,7 @@ export default function Privacy() {
             The profile you fill in: Minecraft name, edition, play style, play times, vibe, what you are looking for, and
             your privacy choices.
           </li>
+          <li>Your name, email address and message, if you use our contact form. We use these only to reply to you.</li>
         </ul>
         <p className="mt-2">We never see your Discord password.</p>
       </section>
